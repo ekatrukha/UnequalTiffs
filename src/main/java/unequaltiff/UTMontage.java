@@ -116,10 +116,8 @@ public class UTMontage< T extends RealType< T > & NativeType< T > > {
 					ra.setPosition(pos);
 					curCell.get().set(ra.get());
 				}
-
 			}
-
-			
+		
 		};
 		
 		Cursor<T> cursorTest = imgs_in.get(0).cursor();
