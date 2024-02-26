@@ -13,7 +13,7 @@
 	<artifactId>unequaltiffcombinemontage</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
-	<name>UnqequalTiffCombineMontage</name>
+	<name>UnequalTiffCombineMontage</name>
 	<description>Making montage or combine tiff images of different sizes</description>
 	<url>https://github.com/ekatrukha/UnequalTiffCombineMontage</url>
 	<inceptionYear>2024</inceptionYear>
