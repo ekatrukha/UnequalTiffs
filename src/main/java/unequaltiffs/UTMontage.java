@@ -30,6 +30,8 @@ public class UTMontage< T extends RealType< T > & NativeType< T > > {
 	int [][] indexes; 
 	final long[][] singleBox;
 	final int nImgN;
+	int nAlignMontage;
+	
 	public UTMontage(final ArrayList<Img<T>> imgs_in_, final ArrayList<long []> im_dims_, final boolean bMultiCh_)
 	{
 		imgs_in = imgs_in_;
@@ -41,10 +43,11 @@ public class UTMontage< T extends RealType< T > & NativeType< T > > {
 		nImgN = im_dims.size();
 	}
 	
-	public Img< T > makeMontage(final int nRows_, final int nCols_)
+	public Img< T > makeMontage(final int nRows_, final int nCols_, final int nAlignMontage_)
 	{
 		nCols = nCols_;
 		nRows = nRows_;
+		nAlignMontage = nAlignMontage_;
 		
 		//calculate the range of boxes size
 		indexes = new int[nCols][nRows];
@@ -76,10 +79,29 @@ public class UTMontage< T extends RealType< T > & NativeType< T > > {
 				nR++;
 			}
 		}
-		
-		for(int i = 0; i<im_dims.size();i++)
+		if(nAlignMontage == UnequalTiffs.ALIGN_ZERO)
 		{
-			intervals.add(Views.interval(Views.extendZero(imgs_in.get(i)),new FinalInterval(singleBox[0],singleBox[1])));
+			for(int i = 0; i<im_dims.size();i++)
+			{
+				intervals.add(Views.interval(Views.extendZero(imgs_in.get(i)),new FinalInterval(singleBox[0],singleBox[1])));
+			}
+		}
+		else
+		{
+			long [] nShifts = new long[nDimN];
+			for(int i = 0; i<im_dims.size();i++)
+			{
+				for(int d=0;d<nDimN;d++)
+				{
+					nShifts[d] = (int) Math.floor(0.5*(singleBox[1][d]-im_dims.get(i)[d]));
+				}
+				
+				intervals.add(Views.interval(
+											Views.translate(
+													Views.extendZero(imgs_in.get(i))
+											,nShifts),
+							new FinalInterval(singleBox[0],singleBox[1])));
+			}
 		}
 		
 		final long[] dimensions = new long[nDimN];

@@ -43,7 +43,8 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 	int nImgN;
 	Calibration cal;
 	int [] ipDim;
-	
+	public static final int ALIGN_ZERO=0, ALIGN_CENTER=1;
+	int nAlignMontage;
 	
 	@Override
 	public void run(String arg) {
@@ -69,21 +70,27 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 			int nRows = nCols;
 			int n = nImgN - nCols*nRows;
 			if (n>0) nCols += (int)Math.ceil((double)n/nRows);
+			final String[] sAlingMontage = new String[2];
+			sAlingMontage[0] = "Zero (origin)";
+			sAlingMontage[1] = "Center";
+			
 			final GenericDialog gdMontage = new GenericDialog( "Make montage" );
 			gdMontage.addNumericField("number of columns:", nCols, 0);
 			gdMontage.addNumericField("number of rows:", nRows, 0);
-
+			gdMontage.addChoice( "Align images by:", sAlingMontage, Prefs.get("UnequalTiffs.nAlignMontage", sAlingMontage[ALIGN_ZERO]) );
 			gdMontage.showDialog();
 			if (gdMontage.wasCanceled() )
 				return;
 			nCols = (int) gdMontage.getNextNumber();
 			nRows = (int) gdMontage.getNextNumber();
+			nAlignMontage = gdMontage.getNextChoiceIndex();
+			Prefs.set("UnequalTiffs.nAlignMontage", sAlingMontage[nAlignMontage]);
 			n = nImgN - nCols*nRows;
 			if (n>0) nCols += (int)Math.ceil((double)n/nRows);
 			IJ.log("Making montage with "+Integer.toString(nRows)+" rows and "+Integer.toString(nCols)+" columns.");
 
 			UTMontage<T> utM = new UTMontage<T>(imgs_in, im_dims, bMultiCh);
-			Img<T> img_montage = utM.makeMontage(nRows, nCols);
+			Img<T> img_montage = utM.makeMontage(nRows, nCols, nAlignMontage);
 			ImagePlus ip_montage;
 			
 			ip_montage = ImageJFunctions.show(prepareMontageForImageJView(img_montage), "Montage" );
