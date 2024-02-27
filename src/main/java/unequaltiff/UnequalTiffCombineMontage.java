@@ -57,10 +57,10 @@ public class UnequalTiffCombineMontage < T extends RealType< T > & NativeType< T
 			return;
 		nImgN = imgs_in.size();
 		
-
+		//making montage
 		if(arg.equals("Montage"))
 		{
-			//making montage
+			
 			//Calculate the number of rows and columns
 			//Based on MontageMaker, this tries to make the 
 			//montage as square as possible
@@ -251,7 +251,6 @@ public class UnequalTiffCombineMontage < T extends RealType< T > & NativeType< T
 		{
 			out = Views.permute(Views.addDimension(out, 0, 0),out.numDimensions()-1,out.numDimensions());
 		}
-		
 
 		return out;
 	}
