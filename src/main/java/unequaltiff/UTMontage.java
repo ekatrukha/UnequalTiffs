@@ -29,6 +29,7 @@ public class UTMontage< T extends RealType< T > & NativeType< T > > {
 	int nDimN;
 	int [][] indexes; 
 	final long[][] singleBox;
+	final int nImgN;
 	public UTMontage(final ArrayList<Img<T>> imgs_in_, final ArrayList<long []> im_dims_, final boolean bMultiCh_)
 	{
 		imgs_in = imgs_in_;
@@ -37,34 +38,42 @@ public class UTMontage< T extends RealType< T > & NativeType< T > > {
 		nDimN = im_dims.get(0).length;
 		singleBox = new long[2][nDimN];
 		intervals = new ArrayList<IntervalView<T>>();
+		nImgN = im_dims.size();
 	}
 	
-	public void makeMontage(final int nRows_, final int nCols_)
+	public Img< T > makeMontage(final int nRows_, final int nCols_)
 	{
 		nCols = nCols_;
 		nRows = nRows_;
 		
 		//calculate the range of boxes size
-		//nDimN = im_dims.get(0).length;
-		//int[] singleBox = new int[nDimN];
-		indexes = new int[nRows][nCols];
-		int nR=0;
-		int nC=0;
-		for(int i = 0; i<im_dims.size();i++)
+		indexes = new int[nCols][nRows];
+		int nR = 0;
+		int nC = 0;
+		//for(int i = 0; i<im_dims.size();i++)
+		for(int i = 0; i<nCols*nRows;i++)
 		{
-			for(int d=0;d<nDimN;d++)
+			if(i<nImgN)
 			{
-				if(im_dims.get(i)[d]>singleBox[1][d])
+				for(int d=0;d<nDimN;d++)
 				{
-					singleBox[1][d] =  im_dims.get(i)[d];
+					if(im_dims.get(i)[d]>singleBox[1][d])
+					{
+						singleBox[1][d] =  im_dims.get(i)[d];
+					}
 				}
+				indexes[nC][nR] = i;
 			}
-			indexes[nR][nC]=i;
-			nR++;
-			if(nR >= nRows)
+			else
 			{
-				nR = 0;
-				nC++;
+				//empty cell
+				indexes[nC][nR] = -1;
+			}
+			nC++;
+			if(nC >= nCols)
+			{
+				nC = 0;
+				nR++;
 			}
 		}
 		
@@ -74,8 +83,8 @@ public class UTMontage< T extends RealType< T > & NativeType< T > > {
 		}
 		
 		final long[] dimensions = new long[nDimN];
-		dimensions[0] = nRows*singleBox[1][0];
-		dimensions[1] = nCols*singleBox[1][1];
+		dimensions[0] = nCols*singleBox[1][0];
+		dimensions[1] = nRows*singleBox[1][1];
 		if(nDimN>2)
 		{
 			for(int d=2;d<nDimN;d++)
@@ -99,10 +108,12 @@ public class UTMontage< T extends RealType< T > & NativeType< T > > {
 			{
 				final int x = ( int ) cell.min( 0 );
 				final int y = ( int ) cell.min( 1 );
-				final int nRow = Math.round(x/singleBox[1][0]);
-				final int nCol = Math.round(y/singleBox[1][1]);				
-				final int imInd = indexes[nRow][nCol];
-				
+				final int nCol = Math.round(x/singleBox[1][0]);
+				final int nRow = Math.round(y/singleBox[1][1]);				
+				final int imInd = indexes[nCol][nRow];
+				//empty cell
+				if(imInd<0)
+					return;
 				final Cursor<T> curCell = cell.localizingCursor();
 				final RandomAccess<T> ra = intervals.get(imInd).randomAccess();
 
@@ -122,11 +133,11 @@ public class UTMontage< T extends RealType< T > & NativeType< T > > {
 		
 		Cursor<T> cursorTest = imgs_in.get(0).cursor();
 		cursorTest.fwd();
-		final Img< T > img = new ReadOnlyCachedCellImgFactory().create(
+		return new ReadOnlyCachedCellImgFactory().create(
 				dimensions,
 				cursorTest.get(),
 				loader,
 				ReadOnlyCachedCellImgOptions.options().cellDimensions( cellDimensions ).cacheType(CacheType.BOUNDED) );
-		ImageJFunctions.show( (RandomAccessibleInterval<T>) img );
+		
 	}
 }

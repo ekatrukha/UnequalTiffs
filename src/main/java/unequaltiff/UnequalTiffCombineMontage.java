@@ -15,29 +15,34 @@ import ij.ImagePlus;
 import ij.Prefs;
 import ij.gui.GenericDialog;
 import ij.io.DirectoryChooser;
+import ij.measure.Calibration;
 import ij.plugin.PlugIn;
 import io.scif.config.SCIFIOConfig;
 import io.scif.config.SCIFIOConfig.ImgMode;
 import io.scif.img.ImgIOException;
 import io.scif.img.ImgOpener;
 import net.imglib2.Cursor;
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
-
-
+import net.imglib2.view.Views;
 
 public class UnequalTiffCombineMontage < T extends RealType< T > & NativeType< T > > implements PlugIn {
 
 	final String sPluginVersion = "0.0.1";
 	int nChannels;
-	boolean bMultiCh;
+	boolean bMultiCh = false;
 	ArrayList<long []> im_dims;
 	ArrayList<Img<T>> imgs_in;
 	int nDimN;
 	int nImgN;
+	Calibration cal;
+	int [] ipDim;
+	
+	
 	@Override
 	public void run(String arg) {
 		
@@ -58,20 +63,31 @@ public class UnequalTiffCombineMontage < T extends RealType< T > & NativeType< T
 		int n = nImgN - nCols*nRows;
 		if (n>0) nCols += (int)Math.ceil((double)n/nRows);
 		final GenericDialog gdMontage = new GenericDialog( "Make montage" );
-		gdMontage.addNumericField("number of rows:", nRows, 0);
 		gdMontage.addNumericField("number of columns:", nCols, 0);
+		gdMontage.addNumericField("number of rows:", nRows, 0);
+
 		gdMontage.showDialog();
 		if (gdMontage.wasCanceled() )
 			return;
-		nRows = (int) gdMontage.getNextNumber();
 		nCols = (int) gdMontage.getNextNumber();
+		nRows = (int) gdMontage.getNextNumber();
 		n = nImgN - nCols*nRows;
 		if (n>0) nCols += (int)Math.ceil((double)n/nRows);
 		IJ.log("Making montage with "+Integer.toString(nRows)+" rows and "+Integer.toString(nCols)+" columns.");
 		
 		UTMontage<T> utM = new UTMontage<T>(imgs_in, im_dims, bMultiCh);
-		utM.makeMontage(nRows, nCols);
-		
+		Img<T> img_montage = utM.makeMontage(nRows, nCols);
+		ImagePlus ip_montage;
+		if(!bMultiCh)
+		{
+			//so it looks a bit better
+			ip_montage = ImageJFunctions.show( Views.permute(Views.addDimension(img_montage, 0, 0),2,img_montage.numDimensions()), "Montage" );
+		}
+		else
+		{
+			ip_montage = ImageJFunctions.show( (RandomAccessibleInterval<T>) img_montage, "Montage" );
+		}
+		ip_montage.setCalibration(cal);
 		IJ.log("Done.");
 	}
 	
@@ -83,7 +99,7 @@ public class UnequalTiffCombineMontage < T extends RealType< T > & NativeType< T
 		if (sPath != null)
 		{
 			IJ.log("UnequalTiffCombineMontage v."+sPluginVersion);
-			IJ.log("Analyzing folder.."+sPath);
+			IJ.log("Analyzing folder "+sPath);
 			try {
 				filenames = getFilenamesFromFolder(sPath, ".tif");
 			} catch (IOException e) {
@@ -95,6 +111,12 @@ public class UnequalTiffCombineMontage < T extends RealType< T > & NativeType< T
 				return false;
 			}
 			else
+			if(filenames.isEmpty())
+			{
+				IJ.log("Cannot find any TIFF files in provided folder, aborting.");
+				return false;
+			}
+			else
 			{
 				IJ.log("Found " +Integer.toString(filenames.size())+" TIFF files.");
 			}
@@ -102,9 +124,11 @@ public class UnequalTiffCombineMontage < T extends RealType< T > & NativeType< T
 		else
 			return false;
 		
-		IJ.log("Analyzing dimensions..");
+		IJ.log("Analyzing dimensions:");
 		
 		ImagePlus ipFirst = IJ.openImage(filenames.get(0));
+		cal = ipFirst.getCalibration();
+		ipDim = ipFirst.getDimensions();
 		String sDims = "XY";
 		nChannels = ipFirst.getNChannels();
 		if(nChannels>1)
@@ -114,12 +138,10 @@ public class UnequalTiffCombineMontage < T extends RealType< T > & NativeType< T
 		}
 		if(ipFirst.getNSlices()>1)
 		{
-			bMultiCh = true;
 			sDims = sDims + "Z";
 		}
 		if(ipFirst.getNFrames()>1)
 		{
-			bMultiCh = true;
 			sDims = sDims + "T";
 		}
 		sDims = sDims +" and " + Integer.toString(ipFirst.getBitDepth())+"-bit";
@@ -127,8 +149,8 @@ public class UnequalTiffCombineMontage < T extends RealType< T > & NativeType< T
 		{
 			sDims = sDims +" with "+ Integer.toString(nChannels)+" channels";
 		}
-		IJ.log("Inferring general dimensions from "+filenames.get(0));
-		IJ.log("Assuming all files are "+sDims+" ");
+		IJ.log(" - Inferring general dimensions/pixel sizes from "+filenames.get(0));
+		IJ.log(" - Assuming all files are "+sDims+" ");
 		ipFirst.close();
 		
 		ImgOpener imgOpener = new ImgOpener();
@@ -175,40 +197,40 @@ public class UnequalTiffCombineMontage < T extends RealType< T > & NativeType< T
 			imgs_in.add((Img<T>) imageCell);
 
 		}
-		//ImageJFunctions.show( imgs_in.get(0) );
-		//ImageJFunctions.show( imgs_in.get(2) );
 
 		return true;
 	}
 
 
 	/**given the path to folder and file extension, returns List<String> of filenames **/
-    public static List<String> getFilenamesFromFolder(final String sFolderPath, final String fileExtension)    
-            throws IOException {
-    		final Path path = Paths.get(sFolderPath);
-    		
-            if (!Files.isDirectory(path)) {
-                throw new IllegalArgumentException("Path must be a directory!");
-            }
+	public static List<String> getFilenamesFromFolder(final String sFolderPath, final String fileExtension)    
+			throws IOException {
+		final Path path = Paths.get(sFolderPath);
 
-            List<String> result = null;
+		if (!Files.isDirectory(path)) {
+			throw new IllegalArgumentException("Path must be a directory!");
+		}
 
-            try (Stream<Path> stream = Files.list(path)) {
-                result = stream
-                        .filter(p -> !Files.isDirectory(p))
-                        // this is a path, not string,
-                        // this only test if path end with a certain path
-                        //.filter(p -> p.endsWith(fileExtension))
-                        // convert path to string first
-                        .map(p -> p.toString())
-                        .filter(f -> f.endsWith(fileExtension))
-                        .collect(Collectors.toList());
-            } catch (IOException e) {
-    			e.printStackTrace();
-            }
+		List<String> result = null;
 
-            return result;
-        }
+		try (Stream<Path> stream = Files.list(path)) {
+			result = stream
+					.filter(p -> !Files.isDirectory(p))
+					// this is a path, not string,
+					// this only test if path end with a certain path
+					//.filter(p -> p.endsWith(fileExtension))
+					// convert path to string first
+					.map(p -> p.toString())
+					.filter(f -> f.endsWith(fileExtension))
+					.collect(Collectors.toList());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return result;
+	}
+	
+	
     
 	public static void main( final String[] args ) throws ImgIOException, IncompatibleTypeException
 	{
