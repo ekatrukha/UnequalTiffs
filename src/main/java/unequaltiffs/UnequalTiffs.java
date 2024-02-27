@@ -1,4 +1,4 @@
-package unequaltiff;
+package unequaltiffs;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,7 +30,7 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
-public class UnequalTiffCombineMontage < T extends RealType< T > & NativeType< T > > implements PlugIn {
+public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implements PlugIn {
 
 	final String sPluginVersion = "0.0.1";
 	int nChannels;
@@ -260,7 +260,7 @@ public class UnequalTiffCombineMontage < T extends RealType< T > & NativeType< T
 	{
 		// open an ImageJ window
 		new ImageJ();
-		UnequalTiffCombineMontage un = new UnequalTiffCombineMontage();
+		UnequalTiffs un = new UnequalTiffs();
 		un.run("Montage");
 	
 	}

@@ -10,12 +10,12 @@
 	</parent>
 
 	<groupId>nl.uu.science.cellbiology</groupId>
-	<artifactId>unequaltiffcombinemontage</artifactId>
+	<artifactId>unequaltiffs</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
-	<name>UnequalTiffCombineMontage</name>
-	<description>Making montage or combine tiff images of different sizes</description>
-	<url>https://github.com/ekatrukha/UnequalTiffCombineMontage</url>
+	<name>UnequalTiffMontageConcatenate</name>
+	<description>Making montage or concatenate tiff images of different sizes</description>
+	<url>https://github.com/ekatrukha/UnequalTiffsMontageConcatenate</url>
 	<inceptionYear>2024</inceptionYear>
 	<organization>
 		<name>Fiji</name>
@@ -58,22 +58,22 @@
 
 
 	<scm>
-		<connection>scm:git:https://github.com/ekatrukha/UnequalTiffCombineMontage</connection>
-		<developerConnection>scm:git:git@github.com:ekatrukha/UnequalTiffCombineMontage</developerConnection>
+		<connection>scm:git:https://github.com/ekatrukha/UnequalTiffsMontageConcatenate</connection>
+		<developerConnection>scm:git:git@github.com:ekatrukha/UnequalTiffsMontageConcatenate</developerConnection>
 		<tag>HEAD</tag>
-		<url>https://github.com/ekatrukha/UnequalTiffCombineMontage</url>
+		<url>https://github.com/ekatrukha/UnequalTiffsMontageConcatenate</url>
 	</scm>
 	<issueManagement>
 		<system>GitHub</system>
-		<url>https://github.com/ekatrukha/UnequalTiffCombineMontage/issues</url>
+		<url>https://github.com/ekatrukha/UnequalTiffsMontageConcatenate/issues</url>
 	</issueManagement>
 	<ciManagement>
 		<system>GitHub Actions</system>
-		<url>https://github.com/ekatrukha/UnequalTiffCombineMontage/actions</url>
+		<url>https://github.com/ekatrukha/UnequalTiffsMontageConcatenate/actions</url>
 	</ciManagement>
 
 	<properties>
-		<package-name>UnequalTiffCombineMontage</package-name>
+		<package-name>UnequalTiffsMontageConcatenate</package-name>
 
 		<license.licenseName>gpl_v3</license.licenseName>
         	<license.copyrightOwners>Fiji distribution of ImageJ for the life sciences.</license.copyrightOwners>

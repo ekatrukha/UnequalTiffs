@@ -1,4 +1,4 @@
-package unequaltiff;
+package unequaltiffs;
 
 import java.util.ArrayList;
 
