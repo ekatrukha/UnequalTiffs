@@ -22,18 +22,20 @@ import io.scif.config.SCIFIOConfig.ImgMode;
 import io.scif.img.ImgIOException;
 import io.scif.img.ImgOpener;
 import net.imglib2.Cursor;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
 public class UnequalTiffCombineMontage < T extends RealType< T > & NativeType< T > > implements PlugIn {
 
 	final String sPluginVersion = "0.0.1";
 	int nChannels;
+	int nSlices;
+	int nTimePoints;
 	boolean bMultiCh = false;
 	ArrayList<long []> im_dims;
 	ArrayList<Img<T>> imgs_in;
@@ -45,6 +47,9 @@ public class UnequalTiffCombineMontage < T extends RealType< T > & NativeType< T
 	
 	@Override
 	public void run(String arg) {
+
+		if(arg == null)
+			return;
 		
 		DirectoryChooser dc = new DirectoryChooser ( "Choose a folder with TIFF images.." );
 		String sPath = dc.getDirectory();
@@ -52,45 +57,44 @@ public class UnequalTiffCombineMontage < T extends RealType< T > & NativeType< T
 			return;
 		nImgN = imgs_in.size();
 		
-		
-		//making montage
-		//Calculate the number of rows and columns
-		//Based on MontageMaker, this tries to make the 
-		//montage as square as possible
 
-		int nCols = (int)Math.sqrt(nImgN);
-		int nRows = nCols;
-		int n = nImgN - nCols*nRows;
-		if (n>0) nCols += (int)Math.ceil((double)n/nRows);
-		final GenericDialog gdMontage = new GenericDialog( "Make montage" );
-		gdMontage.addNumericField("number of columns:", nCols, 0);
-		gdMontage.addNumericField("number of rows:", nRows, 0);
+		if(arg.equals("Montage"))
+		{
+			//making montage
+			//Calculate the number of rows and columns
+			//Based on MontageMaker, this tries to make the 
+			//montage as square as possible
 
-		gdMontage.showDialog();
-		if (gdMontage.wasCanceled() )
-			return;
-		nCols = (int) gdMontage.getNextNumber();
-		nRows = (int) gdMontage.getNextNumber();
-		n = nImgN - nCols*nRows;
-		if (n>0) nCols += (int)Math.ceil((double)n/nRows);
-		IJ.log("Making montage with "+Integer.toString(nRows)+" rows and "+Integer.toString(nCols)+" columns.");
-		
-		UTMontage<T> utM = new UTMontage<T>(imgs_in, im_dims, bMultiCh);
-		Img<T> img_montage = utM.makeMontage(nRows, nCols);
-		ImagePlus ip_montage;
-		if(!bMultiCh)
-		{
-			//so it looks a bit better
-			ip_montage = ImageJFunctions.show( Views.permute(Views.addDimension(img_montage, 0, 0),2,img_montage.numDimensions()), "Montage" );
+			int nCols = (int)Math.sqrt(nImgN);
+			int nRows = nCols;
+			int n = nImgN - nCols*nRows;
+			if (n>0) nCols += (int)Math.ceil((double)n/nRows);
+			final GenericDialog gdMontage = new GenericDialog( "Make montage" );
+			gdMontage.addNumericField("number of columns:", nCols, 0);
+			gdMontage.addNumericField("number of rows:", nRows, 0);
+
+			gdMontage.showDialog();
+			if (gdMontage.wasCanceled() )
+				return;
+			nCols = (int) gdMontage.getNextNumber();
+			nRows = (int) gdMontage.getNextNumber();
+			n = nImgN - nCols*nRows;
+			if (n>0) nCols += (int)Math.ceil((double)n/nRows);
+			IJ.log("Making montage with "+Integer.toString(nRows)+" rows and "+Integer.toString(nCols)+" columns.");
+
+			UTMontage<T> utM = new UTMontage<T>(imgs_in, im_dims, bMultiCh);
+			Img<T> img_montage = utM.makeMontage(nRows, nCols);
+			ImagePlus ip_montage;
+			
+			ip_montage = ImageJFunctions.show(prepareMontageForImageJView(img_montage), "Montage" );
+			ip_montage.setCalibration(cal);
+			IJ.log("Done.");
 		}
-		else
-		{
-			ip_montage = ImageJFunctions.show( (RandomAccessibleInterval<T>) img_montage, "Montage" );
-		}
-		ip_montage.setCalibration(cal);
-		IJ.log("Done.");
 	}
 	
+	/** function reads all tiffs from the sPath and ensures they have the same
+	 * dimensions and number of channels.
+	 * If succeeded, fills all member variables of this class **/
 	@SuppressWarnings("unchecked")
 	boolean initializeAndCheckConsistensy(String sPath)
 	{
@@ -131,27 +135,31 @@ public class UnequalTiffCombineMontage < T extends RealType< T > & NativeType< T
 		ipDim = ipFirst.getDimensions();
 		String sDims = "XY";
 		nChannels = ipFirst.getNChannels();
+		nSlices = ipFirst.getNSlices();
+		nTimePoints = ipFirst.getNFrames();
 		if(nChannels>1)
 		{
 			bMultiCh = true;
 			sDims = sDims + "C";
 		}
-		if(ipFirst.getNSlices()>1)
+		if(nSlices>1)
 		{
 			sDims = sDims + "Z";
 		}
-		if(ipFirst.getNFrames()>1)
+		if(nTimePoints>1)
 		{
 			sDims = sDims + "T";
 		}
 		sDims = sDims +" and " + Integer.toString(ipFirst.getBitDepth())+"-bit";
+		ipFirst.close();
+		
 		if(bMultiCh)
 		{
 			sDims = sDims +" with "+ Integer.toString(nChannels)+" channels";
 		}
 		IJ.log(" - Inferring general dimensions/pixel sizes from "+filenames.get(0));
 		IJ.log(" - Assuming all files are "+sDims+" ");
-		ipFirst.close();
+
 		
 		ImgOpener imgOpener = new ImgOpener();
 		SCIFIOConfig config = new SCIFIOConfig();
@@ -230,6 +238,23 @@ public class UnequalTiffCombineMontage < T extends RealType< T > & NativeType< T
 		return result;
 	}
 	
+	/** function orders input Img<T> to ImageJ order of XYCZT **/	
+	public IntervalView<T> prepareMontageForImageJView(final Img<T> img_montage)
+	{
+		IntervalView<T> out = Views.interval(img_montage, img_montage);
+		if(!bMultiCh)
+		{
+			//so it looks a bit better
+			out = Views.permute(Views.addDimension(out, 0, 0),2,out.numDimensions());
+		}
+		if(nTimePoints>1 && nSlices == 1)
+		{
+			out = Views.permute(Views.addDimension(out, 0, 0),out.numDimensions()-1,out.numDimensions());
+		}
+		
+
+		return out;
+	}
 	
     
 	public static void main( final String[] args ) throws ImgIOException, IncompatibleTypeException
@@ -237,7 +262,7 @@ public class UnequalTiffCombineMontage < T extends RealType< T > & NativeType< T
 		// open an ImageJ window
 		new ImageJ();
 		UnequalTiffCombineMontage un = new UnequalTiffCombineMontage();
-		un.run(null);
+		un.run("Montage");
 	
 	}
 
