@@ -268,7 +268,7 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		{
 			 p = Paths.get(fullPath.get(i));
 			 sFileNamesShort[i] = p.getFileName().toString();
-			 sFileNamesShort[i] = sFileNamesShort[i].substring(0, sFileNamesShort[i].length()-sFileExtension.length()-1);
+			 sFileNamesShort[i] = sFileNamesShort[i].substring(0, sFileNamesShort[i].length()-sFileExtension.length());
 		}
 		
 	}
