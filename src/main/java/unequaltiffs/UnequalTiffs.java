@@ -1,5 +1,6 @@
 package unequaltiffs;
 
+import java.awt.Font;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +15,9 @@ import ij.ImageJ;
 import ij.ImagePlus;
 import ij.Prefs;
 import ij.gui.GenericDialog;
+import ij.gui.Overlay;
+import ij.gui.TextRoi;
+import ij.gui.Toolbar;
 import ij.io.DirectoryChooser;
 import ij.measure.Calibration;
 import ij.plugin.PlugIn;
@@ -39,12 +43,14 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 	boolean bMultiCh = false;
 	ArrayList<long []> im_dims;
 	ArrayList<Img<T>> imgs_in;
+	String [] sFileNamesShort;
 	int nDimN;
 	int nImgN;
 	Calibration cal;
 	int [] ipDim;
 	public static final int ALIGN_ZERO=0, ALIGN_CENTER=1;
 	int nAlignMontage;
+	String sFileExtension = ".tif";
 	
 	@Override
 	public void run(String arg) {
@@ -95,7 +101,15 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 			
 			ip_montage = ImageJFunctions.show(prepareMontageForImageJView(img_montage), "Montage" );
 			ip_montage.setCalibration(cal);
+			utM.addCaptionsOverlay(sFileNamesShort, ip_montage);
+
+
 			IJ.log("Done.");
+		}
+		
+		if(arg.equals("Concatenate"))
+		{
+			IJ.log("Not implemented yet.");
 		}
 	}
 	
@@ -112,7 +126,7 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 			IJ.log("UnequalTiffCombineMontage v."+sPluginVersion);
 			IJ.log("Analyzing folder "+sPath);
 			try {
-				filenames = getFilenamesFromFolder(sPath, ".tif");
+				filenames = getFilenamesFromFolder(sPath, sFileExtension);
 			} catch (IOException e) {
 				e.printStackTrace();
 				IJ.log(e.getMessage());
@@ -135,6 +149,7 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		else
 			return false;
 		
+		fillFilenamesArray(filenames);
 		IJ.log("Analyzing dimensions:");
 		
 		ImagePlus ipFirst = IJ.openImage(filenames.get(0));
@@ -243,6 +258,19 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		}
 
 		return result;
+	}
+	
+	public void fillFilenamesArray(List<String> fullPath)
+	{
+		sFileNamesShort = new String[fullPath.size()];
+		Path p;
+		for(int i=0;i<fullPath.size();i++)
+		{
+			 p = Paths.get(fullPath.get(i));
+			 sFileNamesShort[i] = p.getFileName().toString();
+			 sFileNamesShort[i] = sFileNamesShort[i].substring(0, sFileNamesShort[i].length()-sFileExtension.length()-1);
+		}
+		
 	}
 	
 	/** function orders input Img<T> to ImageJ order of XYCZT **/	

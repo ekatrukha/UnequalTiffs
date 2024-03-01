@@ -1,11 +1,22 @@
 package unequaltiffs;
 
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
+import ij.ImagePlus;
+import ij.gui.Overlay;
+import ij.gui.TextRoi;
+import ij.gui.Toolbar;
+import ij.util.Java2;
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccess;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.img.CellLoader;
 import net.imglib2.cache.img.ReadOnlyCachedCellImgFactory;
 import net.imglib2.cache.img.ReadOnlyCachedCellImgOptions;
@@ -162,4 +173,71 @@ public class UTMontage< T extends RealType< T > & NativeType< T > > {
 				ReadOnlyCachedCellImgOptions.options().cellDimensions( cellDimensions ).cacheType(CacheType.BOUNDED) );
 		
 	}
+	/** function adding filenames to overlay of Montage **/
+	public void addCaptionsOverlay(final String[] filenames, final ImagePlus im)
+	{
+		
+		Overlay imOverlay = new Overlay(); 
+		final Font font = new Font(TextRoi.getDefaultFontName(),TextRoi.getDefaultFontStyle(),TextRoi.getDefaultFontSize());
+
+		final Graphics g = (new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB)).createGraphics();
+		g.setFont(font);
+		final FontMetrics fM = g.getFontMetrics();
+		
+		TextRoi txtROI;
+		Rectangle2D.Double bounds;
+		int nR = 0;
+		int nC = 0;
+		//for(int i = 0; i<im_dims.size();i++)
+		for(int i = 0; i<nImgN;i++)
+		{
+			String in = getTruncatedString( fM, g, (int) singleBox[1][0]-5, filenames[i]);
+			txtROI = new TextRoi(5+nC*singleBox[1][0], 5+nR*singleBox[1][1], getTruncatedString( fM, g, (int) singleBox[1][0]-5, filenames[i] ), font);
+			txtROI.setStrokeColor(Toolbar.getForegroundColor());
+			txtROI.setAntiAlias(TextRoi.isAntialiased());
+			txtROI.setJustification(TextRoi.getGlobalJustification());
+			bounds = txtROI.getFloatBounds();
+			bounds.width = 5;
+			txtROI.setBounds(bounds);
+			
+//			if(bounds.width>singleBox[1][0])
+//			{
+//				bounds.width = (double)singleBox[1][0];
+//				txtROI.setBounds(bounds);
+//			}
+			
+			
+			imOverlay.add(txtROI);
+			
+			nC++;
+			if(nC >= nCols)
+			{
+				nC = 0;
+				nR++;
+			}
+		}
+		
+		im.setOverlay(imOverlay);
+		
+	}
+	
+	String getTruncatedString(final FontMetrics fM,  final Graphics g, final int nMaxWidth, final String sIn)
+	{
+		if (sIn == null)
+            return null;
+		
+		String truncated = sIn;
+		int length = sIn.length();
+		while (length>0)
+		{
+			if(fM.getStringBounds(truncated, g).getWidth()<=nMaxWidth)
+			{
+				return truncated;
+			}
+			length--;
+			truncated = sIn.substring(0, length);
+		}
+		return "";
+	}
+	
 }
