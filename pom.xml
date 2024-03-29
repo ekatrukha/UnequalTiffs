@@ -11,15 +11,15 @@
 
 	<groupId>nl.uu.science.cellbiology</groupId>
 	<artifactId>unequaltiffs</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 
 	<name>UnequalTiffMontageConcatenate</name>
 	<description>Making montage or concatenate tiff images of different sizes</description>
 	<url>https://github.com/ekatrukha/UnequalTiffsMontageConcatenate</url>
 	<inceptionYear>2024</inceptionYear>
 	<organization>
-		<name>Fiji</name>
-		<url>https://fiji.sc/</url>
+		<name>Cell Biology, Neurobiology and Biophysics Department of Utrecht University</name>
+		<url>https://cellbiology.science.uu.nl/</url>
 	</organization>
 	<licenses>
 		<license>
@@ -52,7 +52,7 @@
 	<mailingLists>
 		<mailingList>
 			<name>Image.sc Forum</name>
-			<archive>https://forum.image.sc/tags/imglib2</archive>
+			<archive>https://forum.image.sc/</archive>
 		</mailingList>
 	</mailingLists>
 
@@ -81,8 +81,8 @@
 
     <repositories>
         <repository>
-            <id>imagej.public</id>
-            <url>http://maven.imagej.net/content/groups/public</url>
+            <id>scijava.public</id>
+            <url>https://maven.scijava.org/content/groups/public</url>
         </repository>
     </repositories>
 
