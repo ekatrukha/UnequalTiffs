@@ -13,9 +13,9 @@
 	<artifactId>unequaltiffs</artifactId>
 	<version>0.0.2-SNAPSHOT</version>
 
-	<name>UnequalTiffMontageConcatenate</name>
+	<name>UnequalTiffs</name>
 	<description>Making montage or concatenate tiff images of different sizes</description>
-	<url>https://github.com/ekatrukha/UnequalTiffsMontageConcatenate</url>
+	<url>https://github.com/ekatrukha/UnequalTiffs</url>
 	<inceptionYear>2024</inceptionYear>
 	<organization>
 		<name>Cell Biology, Neurobiology and Biophysics Department of Utrecht University</name>
@@ -58,25 +58,25 @@
 
 
 	<scm>
-		<connection>scm:git:https://github.com/ekatrukha/UnequalTiffsMontageConcatenate</connection>
-		<developerConnection>scm:git:git@github.com:ekatrukha/UnequalTiffsMontageConcatenate</developerConnection>
+		<connection>scm:git:https://github.com/ekatrukha/UnequalTiffs</connection>
+		<developerConnection>scm:git:git@github.com:ekatrukha/UnequalTiffs</developerConnection>
 		<tag>HEAD</tag>
-		<url>https://github.com/ekatrukha/UnequalTiffsMontageConcatenate</url>
+		<url>https://github.com/ekatrukha/UnequalTiffs</url>
 	</scm>
 	<issueManagement>
 		<system>GitHub</system>
-		<url>https://github.com/ekatrukha/UnequalTiffsMontageConcatenate/issues</url>
+		<url>https://github.com/ekatrukha/UnequalTiffs/issues</url>
 	</issueManagement>
 	<ciManagement>
 		<system>GitHub Actions</system>
-		<url>https://github.com/ekatrukha/UnequalTiffsMontageConcatenate/actions</url>
+		<url>https://github.com/ekatrukha/UnequalTiffs/actions</url>
 	</ciManagement>
 
 	<properties>
-		<package-name>UnequalTiffsMontageConcatenate</package-name>
+		<package-name>UnequalTiffs</package-name>
 
 		<license.licenseName>gpl_v3</license.licenseName>
-        	<license.copyrightOwners>Fiji distribution of ImageJ for the life sciences.</license.copyrightOwners>
+        	<license.copyrightOwners>Cell Biology, Neurobiology and Biophysics Department of Utrecht University</license.copyrightOwners>
 	</properties>
 
     <repositories>
