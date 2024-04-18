@@ -3,8 +3,7 @@ package unequaltiffs;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
+
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -13,7 +12,7 @@ import ij.ImagePlus;
 import ij.gui.Overlay;
 import ij.gui.TextRoi;
 import ij.gui.Toolbar;
-import ij.util.Java2;
+
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccess;
@@ -23,7 +22,6 @@ import net.imglib2.cache.img.ReadOnlyCachedCellImgOptions;
 import net.imglib2.cache.img.SingleCellArrayImg;
 import net.imglib2.cache.img.optional.CacheOptions.CacheType;
 import net.imglib2.img.Img;
-import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.IntervalView;
@@ -31,27 +29,24 @@ import net.imglib2.view.Views;
 
 public class UTMontage< T extends RealType< T > & NativeType< T > > {
 
-	final ArrayList<long []> im_dims;
-	final ArrayList<Img<T>> imgs_in;	
+	UTImageSet<T> imageSet;
+	
 	final ArrayList<IntervalView<T>> intervals;
 	int nCols;
 	int nRows;
-	final boolean bMultiCh;
-	int nDimN;
+
 	int [][] indexes; 
 	final long[][] singleBox;
 	final int nImgN;
 	int nAlignMontage;
+
 	
-	public UTMontage(final ArrayList<Img<T>> imgs_in_, final ArrayList<long []> im_dims_, final boolean bMultiCh_)
+	public UTMontage(final UTImageSet<T> imageSet_)
 	{
-		imgs_in = imgs_in_;
-		im_dims = im_dims_;
-		bMultiCh = bMultiCh_;
-		nDimN = im_dims.get(0).length;
-		singleBox = new long[2][nDimN];
+		imageSet = imageSet_;
+		singleBox = imageSet.getSingleBox();
 		intervals = new ArrayList<IntervalView<T>>();
-		nImgN = im_dims.size();
+		nImgN = imageSet.im_dims.size();
 	}
 	
 	public Img< T > makeMontage(final int nRows_, final int nCols_, final int nAlignMontage_)
@@ -69,13 +64,6 @@ public class UTMontage< T extends RealType< T > & NativeType< T > > {
 		{
 			if(i<nImgN)
 			{
-				for(int d=0;d<nDimN;d++)
-				{
-					if(im_dims.get(i)[d]>singleBox[1][d])
-					{
-						singleBox[1][d] =  im_dims.get(i)[d];
-					}
-				}
 				indexes[nC][nR] = i;
 			}
 			else
@@ -92,41 +80,41 @@ public class UTMontage< T extends RealType< T > & NativeType< T > > {
 		}
 		if(nAlignMontage == UnequalTiffs.ALIGN_ZERO)
 		{
-			for(int i = 0; i<im_dims.size();i++)
+			for(int i = 0; i<imageSet.im_dims.size();i++)
 			{
-				intervals.add(Views.interval(Views.extendZero(imgs_in.get(i)),new FinalInterval(singleBox[0],singleBox[1])));
+				intervals.add(Views.interval(Views.extendZero(imageSet.imgs_in.get(i)),new FinalInterval(singleBox[0],singleBox[1])));
 			}
 		}
 		else
 		{
-			long [] nShifts = new long[nDimN];
-			for(int i = 0; i<im_dims.size();i++)
+			long [] nShifts = new long[imageSet.nDimN];
+			for(int i = 0; i<imageSet.im_dims.size();i++)
 			{
-				for(int d=0;d<nDimN;d++)
+				for(int d=0;d<imageSet.nDimN;d++)
 				{
-					nShifts[d] = (int) Math.floor(0.5*(singleBox[1][d]-im_dims.get(i)[d]));
+					nShifts[d] = (int) Math.floor(0.5*(singleBox[1][d]-imageSet.im_dims.get(i)[d]));
 				}
 				
 				intervals.add(Views.interval(
 											Views.translate(
-													Views.extendZero(imgs_in.get(i))
+													Views.extendZero(imageSet.imgs_in.get(i))
 											,nShifts),
 							new FinalInterval(singleBox[0],singleBox[1])));
 			}
 		}
 		
-		final long[] dimensions = new long[nDimN];
+		final long[] dimensions = new long[imageSet.nDimN];
 		dimensions[0] = nCols*singleBox[1][0];
 		dimensions[1] = nRows*singleBox[1][1];
-		if(nDimN>2)
+		if(imageSet.nDimN>2)
 		{
-			for(int d=2;d<nDimN;d++)
+			for(int d=2;d<imageSet.nDimN;d++)
 			{
 				dimensions[d]=singleBox[1][d];
 			}
 		}
 		final int[] cellDimensions;
-		if(bMultiCh)
+		if(imageSet.bMultiCh)
 		{
 			cellDimensions = new int[] { (int)singleBox[1][0], (int)singleBox[1][1], (int)singleBox[1][2] };
 		}
@@ -144,13 +132,14 @@ public class UTMontage< T extends RealType< T > & NativeType< T > > {
 				final int nCol = Math.round(x/singleBox[1][0]);
 				final int nRow = Math.round(y/singleBox[1][1]);				
 				final int imInd = indexes[nCol][nRow];
+				
 				//empty cell
-				if(imInd<0)
+				if(imInd < 0)
 					return;
 				final Cursor<T> curCell = cell.localizingCursor();
 				final RandomAccess<T> ra = intervals.get(imInd).randomAccess();
 
-				long [] pos = new long [nDimN];
+				long [] pos = new long [imageSet.nDimN];
 				while(curCell.hasNext())
 				{
 					curCell.fwd();
@@ -164,13 +153,13 @@ public class UTMontage< T extends RealType< T > & NativeType< T > > {
 		
 		};
 		
-		Cursor<T> cursorTest = imgs_in.get(0).cursor();
+		Cursor<T> cursorTest = imageSet.imgs_in.get(0).cursor();
 		cursorTest.fwd();
 		return new ReadOnlyCachedCellImgFactory().create(
 				dimensions,
 				cursorTest.get(),
 				loader,
-				ReadOnlyCachedCellImgOptions.options().cellDimensions( cellDimensions ).cacheType(CacheType.BOUNDED) );
+				ReadOnlyCachedCellImgOptions.options().cellDimensions( cellDimensions ).cacheType(CacheType.BOUNDED).maxCacheSize(3) );
 		
 	}
 	/** function adding filenames to overlay of Montage **/
@@ -191,7 +180,7 @@ public class UTMontage< T extends RealType< T > & NativeType< T > > {
 		//for(int i = 0; i<im_dims.size();i++)
 		for(int i = 0; i<nImgN;i++)
 		{
-			String in = getTruncatedString( fM, g, (int) singleBox[1][0]-5, filenames[i]);
+			//String in = getTruncatedString( fM, g, (int) singleBox[1][0]-5, filenames[i]);
 			txtROI = new TextRoi(5+nC*singleBox[1][0], 5+nR*singleBox[1][1], getTruncatedString( fM, g, (int) singleBox[1][0]-5, filenames[i] ), font);
 			txtROI.setStrokeColor(Toolbar.getForegroundColor());
 			txtROI.setAntiAlias(TextRoi.isAntialiased());
