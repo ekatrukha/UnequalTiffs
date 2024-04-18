@@ -2,14 +2,7 @@ package unequaltiffs;
 
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 
 import ij.IJ;
 import ij.ImageJ;
@@ -17,14 +10,9 @@ import ij.ImagePlus;
 import ij.Prefs;
 import ij.gui.GenericDialog;
 import ij.io.DirectoryChooser;
-import ij.measure.Calibration;
 import ij.plugin.PlugIn;
-import io.scif.config.SCIFIOConfig;
-import io.scif.config.SCIFIOConfig.ImgMode;
+
 import io.scif.img.ImgIOException;
-import io.scif.img.ImgOpener;
-import io.scif.img.SCIFIOImgPlus;
-import net.imglib2.Cursor;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
@@ -104,6 +92,16 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		{
 			IJ.log("Not implemented yet.");
 		}
+		if(arg.equals("BrowseBDV"))
+		{
+			UTExploreBDV<T> exploreBDV = new UTExploreBDV<T>(imageSet);
+			exploreBDV.browseBDV();
+		}
+		if(arg.equals("BrowseBVV"))
+		{
+			UTExploreBVV<T> exploreBVV = new UTExploreBVV<T>(imageSet);
+			exploreBVV.browseBVV();
+		}
 	}
 	
 	
@@ -131,7 +129,8 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		new ImageJ();
 		@SuppressWarnings("rawtypes")
 		UnequalTiffs un = new UnequalTiffs();
-		un.run("Montage");
+		//un.run("Montage");		
+		un.run("BrowseBVV");
 	
 	}
 

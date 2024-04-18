@@ -87,6 +87,12 @@
     </repositories>
 
 	<dependencies>
+		
+		<dependency>
+		  <groupId>nl.uu.science.cellbiology</groupId>
+		  <artifactId>bvv-playground</artifactId>
+		  <version>0.1.4</version>
+		</dependency>
 		<!-- ImgLib2 dependencies -->
 		<dependency>
 			<groupId>net.imglib2</groupId>
@@ -108,8 +114,14 @@
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-realtransform</artifactId>
 		</dependency>
-
-
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>bigdataviewer-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>bigdataviewer-vistools</artifactId>
+		</dependency>
 		<!-- ImageJ dependencies -->
 		<dependency>
 			<groupId>net.imagej</groupId>
