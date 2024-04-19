@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,7 +40,7 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 	public int nDimN;
 	public String sDims;
 	
-	long[][] singleBox = null;
+	long[] singleBoxDims = null;
 	public boolean bInit = false;
 	
 	/** colors for each channel **/
@@ -114,15 +115,15 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 			sDims = sDims + "C";
 		}
 
-		sDims = sDims +" and " + Integer.toString(ipFirst.getBitDepth())+"-bit";
+		String sDimsOut = sDims +" and " + Integer.toString(ipFirst.getBitDepth())+"-bit";
 		ipFirst.close();
 		
 		if(bMultiCh)
 		{
-			sDims = sDims +" with "+ Integer.toString(nChannels)+" channels";
+			sDimsOut = sDimsOut +" with "+ Integer.toString(nChannels)+" channels";
 		}
 		IJ.log(" - Inferring general dimensions/pixel sizes from "+filenames.get(0));
-		IJ.log(" - Assuming all files are "+sDims+" ");
+		IJ.log(" - Assuming all files are "+sDimsOut+" ");
 
 		
 		IJ.showStatus("Loading files....");
@@ -210,7 +211,7 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
+		Collections.sort(result);
 		return result;
 	}
 	
@@ -227,25 +228,25 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 		
 	}
 	
-	public long [][] getSingleBox()
+	public long [] getSingleBoxDims()
 	{
 		if(!bInit)
 			return null;
-		if(singleBox == null)
+		if(singleBoxDims == null)
 		{
-			singleBox = new long[2][nDimN];
+			singleBoxDims = new long[nDimN];
 			for(int i = 0; i<imgs_in.size();i++)
 			{
 					for(int d=0;d<nDimN;d++)
 					{
-						if(im_dims.get(i)[d]>singleBox[1][d])
+						if(im_dims.get(i)[d]>singleBoxDims[d])
 						{
-							singleBox[1][d] =  im_dims.get(i)[d];
+							singleBoxDims[d] =  im_dims.get(i)[d];
 						}
 					}
 			}			
 		}
-		return singleBox;
+		return singleBoxDims;
 	}
 	
 	/** creates and fills array colorsCh with channel colors,

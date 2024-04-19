@@ -35,7 +35,7 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 	int nRows;
 	int [][] indexes; 
 	int [][] indexes_inv; 
-	final long[][] singleBox;
+	final long [] singleBoxDims;
 	long [][] nFinalBox;
 	public double [] globCal;
 	
@@ -69,7 +69,7 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 	public UTExploreBVV(final UTImageSet<T> imageSet_)
 	{
 		imageSet = imageSet_;
-		singleBox = imageSet.getSingleBox();
+		singleBoxDims = imageSet.getSingleBoxDims();
 		intervals = new ArrayList<IntervalView<T>>();
 		nImgN = imageSet.im_dims.size();
 		dragRotate = new Rotate( 0.3 );
@@ -101,7 +101,7 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 			currShift = new double[5];
 			for(int j=0;j<2;j++)
 			{
-				currShift[j]+=indexes_inv[i][j]*singleBox[1][j];
+				currShift[j]+=indexes_inv[i][j]*singleBoxDims[j];
 			}
 			arrTr.translate(currShift);
 			if(!imageSet.bMultiCh)
@@ -276,26 +276,26 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 		
 		//adjust box dimensions to allow rotation 
 		
-		long maxL = Math.max(singleBox[1][0],singleBox[1][1]);
+		long maxL = Math.max(singleBoxDims[0],singleBoxDims[1]);
 		if(imageSet.bMultiCh)
 		{
-			maxL = Math.max(maxL, singleBox[1][3]);
+			maxL = Math.max(maxL, singleBoxDims[3]);
 		}
 		else
 		{
-			maxL = Math.max(maxL, singleBox[1][2]);
+			maxL = Math.max(maxL, singleBoxDims[2]);
 		}
 		for(int d=0; d<2; d++)
 		{
-			singleBox[1][d] = maxL;
+			singleBoxDims[d] = maxL;
 		}
 		if(imageSet.bMultiCh)
 		{
-			singleBox[1][3] = maxL;
+			singleBoxDims[3] = maxL;
 		}
 		else
 		{
-			singleBox[1][2] = maxL;
+			singleBoxDims[2] = maxL;
 		}
 		
 		for(int j = 0; j<nImgN;j++)
@@ -307,7 +307,7 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 				{
 					if(!(imageSet.bMultiCh && d == 2))
 					{
-						nShifts[d] = (int) Math.floor(0.5*(singleBox[1][d]-imageSet.im_dims.get(j)[d]));
+						nShifts[d] = (int) Math.floor(0.5*(singleBoxDims[d]-imageSet.im_dims.get(j)[d]));
 					}
 				}
 			}
@@ -319,15 +319,15 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 		//center of the box
 		for(int d=0; d<2; d++)
 		{
-			centBox[d] = singleBox[1][d]*0.5;
+			centBox[d] = singleBoxDims[d]*0.5;
 		}
 		if(imageSet.bMultiCh)
 		{
-			centBox[2] = singleBox[1][3]*0.5;
+			centBox[2] = singleBoxDims[3]*0.5;
 		}
 		else
 		{
-			centBox[2] = singleBox[1][2]*0.5;
+			centBox[2] = singleBoxDims[2]*0.5;
 		}
 	}
 	
@@ -379,9 +379,9 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 		long [][] nBox;
 
 		nBox = new long [2][3];
-		nBox[1][0] = singleBox[1][0]*nCols;
-		nBox[1][1] = singleBox[1][0]*nRows;
-		nBox[1][2] = singleBox[1][2];
+		nBox[1][0] = singleBoxDims[0]*nCols;
+		nBox[1][1] = singleBoxDims[1]*nRows;
+		nBox[1][2] = singleBoxDims[2];
 		
 		double nW = (double)(nBox[1][0]-nBox[0][0])*globCal[0];
 		double nH = (double)(nBox[1][1]-nBox[0][1])*globCal[1];

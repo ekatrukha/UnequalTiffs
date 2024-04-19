@@ -30,6 +30,7 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 	int [] ipDim;
 	public static final int ALIGN_ZERO=0, ALIGN_CENTER=1;
 	int nAlignMontage;
+	int nAlignConc;
 	String sFileExtension = ".tif";
 	UTImageSet<T> imageSet = new UTImageSet<T>();
 	
@@ -91,6 +92,102 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 			utM.addCaptionsOverlay(imageSet.sFileNamesShort, ip_montage);
 			ip_montage.getWindow().addWindowListener(this);
 
+			IJ.log("Done.");
+		}
+		
+		//making concatenation
+		if(arg.equals("Concatenate"))
+		{
+			if(imageSet.sDims.length()>=5)
+			{
+				IJ.error("Images already are XYZTC, no free dimension to concatenate.\n Aborting.");
+				return;
+			}
+			String sConcatDim = "";
+			String sConcatOptions = "";
+			
+			//no need to ask for the dimension
+			if(imageSet.sDims.length() == 4)
+			{
+				if(imageSet.nChannels == 1)
+				{
+					sConcatDim = "C";
+					IJ.log("Concatenating along channel axis.");
+				}
+				if(imageSet.nTimePoints == 1)
+				{
+					sConcatDim = "T";
+					IJ.log("Concatenating along time.");
+				}
+				if(imageSet.nSlices == 1)
+				{
+					sConcatDim = "Z";
+					IJ.log("Concatenating along Z axis.");
+				}				
+			}
+			else
+			{				
+				if(imageSet.nSlices == 1)
+				{
+					sConcatOptions = sConcatOptions + "Z";
+				}
+				if(imageSet.nTimePoints == 1)
+				{
+					sConcatOptions = sConcatOptions + "T";
+				}
+				if(imageSet.nChannels == 1)
+				{
+					sConcatOptions = sConcatOptions + "C";
+				}
+			}
+			//ask user, what he wants as a concatenation axis
+			final GenericDialog gdConcat = new GenericDialog( "Concatenate" );
+			final String[] sAlingConc = new String[2];
+			String[] sConcatDimDial = null;
+			if (sConcatOptions.length()>0)
+			{
+				sConcatDimDial = new String[sAlingConc.length];
+				for (int i=0;i<sConcatOptions.length();i++)
+				{
+					sConcatDimDial[i]=sConcatOptions.substring(i, i+1);
+				}
+				gdConcat.addChoice( "Concatenate along axis:", sConcatDimDial, sConcatDimDial[0]);
+			}
+			
+			sAlingConc[0] = "Zero (origin)";
+			sAlingConc[1] = "Center";
+			gdConcat.addChoice( "Align images by:", sAlingConc, Prefs.get("UnequalTiffs.nAlignConc", sAlingConc[ALIGN_ZERO]) );
+			gdConcat.showDialog();
+			if (gdConcat.wasCanceled() )
+				return;
+			nAlignConc = gdConcat.getNextChoiceIndex();
+			Prefs.set("UnequalTiffs.nAlignConc", sAlingConc[nAlignMontage]);
+			if (sConcatOptions.length()>0)
+			{
+				sConcatDim = sConcatDimDial[gdConcat.getNextChoiceIndex()];
+				switch (sConcatDim)
+				{
+					case "C":
+						IJ.log("Concatenating along channel axis.");
+						break;
+					case "T":
+						IJ.log("Concatenating along time.");
+						break;
+					case "Z":
+						IJ.log("Concatenating along Z axis.");
+						break;
+				
+				}
+			}
+			UTConcatenate<T> utC = new UTConcatenate<T>(imageSet);
+			Img<T> img_conc = utC.concatenate( nAlignMontage, sConcatDim);
+			ImagePlus ip_conc = null;
+			
+			ip_conc = ImageJFunctions.show(img_conc, "Concatenated" );
+			ip_conc.setCalibration(imageSet.cal);
+//			//utM.addCaptionsOverlay(imageSet.sFileNamesShort, ip_montage);
+			ip_conc.getWindow().addWindowListener(this);
+//
 			IJ.log("Done.");
 		}
 		boolean bIs2D = false;
@@ -161,7 +258,7 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		//un.run("Montage");		
 		///un.run("Explore");
 		
-		un.run("BrowseBDV");
+		un.run("Concatenate");
 	
 	}
 
