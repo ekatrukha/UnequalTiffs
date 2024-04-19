@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
+import org.scijava.ui.behaviour.util.Actions;
 import org.scijava.ui.behaviour.util.Behaviours;
 
 import bdv.tools.transformation.TransformedSource;
@@ -37,6 +38,7 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 	final long[][] singleBox;
 	long [][] nFinalBox;
 	public double [] globCal;
+	
 	ArrayList<BvvStackSource< ? >> bvv_sources = new ArrayList<BvvStackSource< ? >>();
 
 	public VolumeViewerPanel viewer;
@@ -122,7 +124,8 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 		viewer = bvv_main.getBvvHandle().getViewerPanel();
 		setInitialTransform();
 		resetViewXY();
-		final SourceGroup g = new SourceGroup();
+		//final SourceGroup g = new SourceGroup();
+		final SourceGroup g = viewer.state().getGroups().get(0);
 		viewer.state().addGroup( g );
 		String a_group_name = "all";
 		viewer.state().setGroupName( g, a_group_name );
@@ -136,8 +139,16 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 		{
 			for(int nCh=0;nCh<imageSet.nChannels;nCh++)
 			{
-				final SourceGroup gCh = new SourceGroup();
-				viewer.state().addGroup( gCh );
+				SourceGroup gCh;
+				if(viewer.state().getGroups().size()<(nCh+1))
+				{
+					gCh = new SourceGroup();
+					viewer.state().addGroup( gCh );
+				}
+				else
+				{
+					gCh = viewer.state().getGroups().get(nCh+1);	
+				}
 				a_group_name = "ch_"+Integer.toString(nCh+1)+"_all";
 				viewer.state().setGroupName( gCh, a_group_name );
 				for(int i=0;i<nImgN;i++)
@@ -150,11 +161,27 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 		
 		Behaviours behaviours = new Behaviours( new InputTriggerConfig() );
 		behaviours.install( bvv_main.getBvvHandle().getTriggerbindings(), "my-new-behaviours" );
-		behaviours.behaviour( dragRotate, "print global pos", "D" );
+		behaviours.behaviour( dragRotate, "rotate each volume", "D" );
+		// add some actions
+		Actions actions = new Actions( new InputTriggerConfig() );
+		actions.install( bvv_main.getBvvHandle().getKeybindings(), "my-new-actions" );
+
+		actions.runnableAction( () -> {
+			 		resetViewXY();
+			}, "reset whole transform", "1" );
+		actions.runnableAction( () -> {
+			 resetViewVolumesXY();
+			}, "align volumes XY", "2" );
+		actions.runnableAction( () -> {
+			 resetViewVolumesXZ();
+			}, "align volumes XZ", "3" );
+		actions.runnableAction( () -> {
+			resetViewVolumesYZ();
+			}, "align volumes YZ", "4" );
 		
 	}
 	
-	void setTransform(AffineTransform3D t)
+	void updateTransform(AffineTransform3D t)
 	{
 		AffineTransform3D curr = new AffineTransform3D();
 		AffineTransform3D currFixed = new AffineTransform3D();
@@ -173,6 +200,37 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 				curr.apply(centBox, currShift);
 				tS.getFixedTransform(currFixed);			
 				tFinal.set(currFixed);
+				LinAlgHelpers.scale(currShift, -1.0, currShift);
+				tFinal.translate(currShift);
+				tFinal.preConcatenate(t);
+				LinAlgHelpers.scale(currShift, -1.0, currShift);
+				tFinal.translate(currShift);				
+				tS.setFixedTransform(tFinal);
+			}
+		}
+		viewer.requestRepaint();
+	}
+	
+	void setTransform(AffineTransform3D t)
+	{
+		AffineTransform3D curr = new AffineTransform3D();
+		//AffineTransform3D currFixed = new AffineTransform3D();
+		AffineTransform3D tFinal = new AffineTransform3D();
+		double [] currShift = new double [3];
+		
+		//bvv_sources.get(0).g
+		for (int i =0; i<bvv_sources.size();i++)
+		{
+			for ( SourceAndConverter< ? > source :bvv_sources.get(i).getSources() )	
+			{
+				
+				TransformedSource< ? > tS = (( TransformedSource< ? > ) source.getSpimSource() );
+	
+				tS.getSourceTransform(0, 0, curr);		
+				curr.apply(centBox, currShift);
+				//tS.getFixedTransform(currFixed);			
+				//tFinal.set(currFixed);
+				tFinal.identity();
 				LinAlgHelpers.scale(currShift, -1.0, currShift);
 				tFinal.translate(currShift);
 				tFinal.preConcatenate(t);
@@ -352,6 +410,28 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 		viewer.state().setViewerTransform(t);
 			
 	}
+	
+	public void resetViewVolumesXY()
+	{
+		AffineTransform3D t = new AffineTransform3D();
+		t.identity();
+		setTransform(t);			
+	}
+	public void resetViewVolumesXZ()
+	{
+		AffineTransform3D t = new AffineTransform3D();
+		t.identity();
+		t.rotate(0, Math.PI/2.0);
+		setTransform(t);			
+	}
+	public void resetViewVolumesYZ()
+	{
+		AffineTransform3D t = new AffineTransform3D();
+		t.identity();
+		t.rotate(0, Math.PI/2.0);
+		t.rotate(1, Math.PI/2.0);
+		setTransform(t);			
+	}
 	private class Rotate implements DragBehaviour
 	{
 		private final double speed;
@@ -390,7 +470,7 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 			//affineDragCurrent.set( affineDragCurrent.get( 1, 3 ) + oY, 1, 3 );
 			//System.out.println(Double.toString(oX)+Double.toString(oY));
 			//transform.set( affineDragCurrent );
-			setTransform(affineDragCurrent);
+			updateTransform(affineDragCurrent);
 		}
 
 		@Override
