@@ -63,10 +63,10 @@ public class UTExploreBDV < T extends RealType< T > & NativeType< T > >
 	 */
 	final private static double step = Math.PI / 180;
 	
-	double [] centBox = new double [3];
+	double [] centBox;// = new double [3];
 	
 	Rotate dragRotate; 
-	boolean bIs2D = false;
+
 	
 	public UTExploreBDV(final UTImageSet<T> imageSet_)
 	{
@@ -77,9 +77,9 @@ public class UTExploreBDV < T extends RealType< T > & NativeType< T > >
 		dragRotate = new Rotate( 0.3 );
 	}
 	
-	public void browseBDV(boolean bIs2D_)
+	public void browseBDV()
 	{
-		bIs2D = bIs2D_;
+
 		globCal = new double[3];
 		globCal[0]=imageSet.cal.pixelWidth;
 		globCal[1]=imageSet.cal.pixelHeight;
@@ -89,7 +89,7 @@ public class UTExploreBDV < T extends RealType< T > & NativeType< T > >
 	
 		Bdv Tempbdv = null;
 		
-		//= BdvFunctions.s.show( Bdv.options().frameTitle( "UnequalTiffs" ).is2D() );
+
 		double[] currShift;
 		AffineTransform3D arrTr = new AffineTransform3D();
 		for(int i=0;i<nImgN;i++)
@@ -107,14 +107,9 @@ public class UTExploreBDV < T extends RealType< T > & NativeType< T > >
 			{
 				if(i==0)
 				{
-					if(bIs2D)
-					{	
-						Tempbdv = BdvFunctions.show(intervals.get(i), imageSet.sFileNamesShort[i], Bdv.options().sourceTransform(arrTr).is2D());					
-					}
-					else
-					{
-						Tempbdv = BdvFunctions.show(intervals.get(i), imageSet.sFileNamesShort[i], Bdv.options().sourceTransform(arrTr));			
-					}
+	
+					Tempbdv = BdvFunctions.show(intervals.get(i), imageSet.sFileNamesShort[i], Bdv.options().sourceTransform(arrTr));			
+				
 					bdv_sources.add((BdvStackSource<?>) Tempbdv);		
 				}
 				else
@@ -126,23 +121,21 @@ public class UTExploreBDV < T extends RealType< T > & NativeType< T > >
 			}
 			else
 			{
+				int nChD=4;
+
+				
 				for(int nCh = 0; nCh< imageSet.nChannels;nCh++)
 				{
 					if(i==0 && nCh==0)
 					{
-						if(bIs2D)
-						{
-							Tempbdv = BdvFunctions.show( Views.hyperSlice(intervals.get(i),4,nCh), imageSet.sFileNamesShort[i]+"_ch"+Integer.toString(nCh+1), Bdv.options().sourceTransform(arrTr).is2D());					
-						}
-						else
-						{
-							Tempbdv = BdvFunctions.show( Views.hyperSlice(intervals.get(i),4,nCh), imageSet.sFileNamesShort[i]+"_ch"+Integer.toString(nCh+1), Bdv.options().sourceTransform(arrTr));					
-						}
+
+						Tempbdv = BdvFunctions.show( Views.hyperSlice(intervals.get(i),nChD,nCh), imageSet.sFileNamesShort[i]+"_ch"+Integer.toString(nCh+1), Bdv.options().sourceTransform(arrTr));					
+						
 						bdv_sources.add((BdvStackSource<?>) Tempbdv);		
 					}
 					else
 					{
-						bdv_sources.add(BdvFunctions.show( Views.hyperSlice(intervals.get(i),4,nCh), imageSet.sFileNamesShort[i]+"_ch"+Integer.toString(nCh+1), Bdv.options().addTo(Tempbdv).sourceTransform(arrTr)));
+						bdv_sources.add(BdvFunctions.show( Views.hyperSlice(intervals.get(i),nChD,nCh), imageSet.sFileNamesShort[i]+"_ch"+Integer.toString(nCh+1), Bdv.options().addTo(Tempbdv).sourceTransform(arrTr)));
 					}
 					bdv_sources.get(bdv_sources.size()-1).setColor( new ARGBType( imageSet.colorsCh[nCh].getRGB() ));
 
@@ -277,6 +270,7 @@ public class UTExploreBDV < T extends RealType< T > & NativeType< T > >
 	{
 		nCols = (int)Math.sqrt(nImgN);
 		nRows = nCols;
+		
 		int n = nImgN - nCols*nRows;
 		
 		if (n>0) nCols += (int)Math.ceil((double)n/nRows);
@@ -304,37 +298,38 @@ public class UTExploreBDV < T extends RealType< T > & NativeType< T > >
 				nR++;
 			}
 		}
+
+		centBox = new double [3];
+		
 		
 		//adjust box dimensions to allow rotation 
 		
 		long maxL = Math.max(singleBoxDims[0],singleBoxDims[1]);
-		if(!bIs2D)
+
+		if(imageSet.bMultiCh)
 		{
-			if(imageSet.bMultiCh)
-			{
-				maxL = Math.max(maxL, singleBoxDims[3]);
-			}
-			else
-			{
-				maxL = Math.max(maxL, singleBoxDims[2]);
-			}
+			maxL = Math.max(maxL, singleBoxDims[3]);
 		}
+		else
+		{
+			maxL = Math.max(maxL, singleBoxDims[2]);
+		}
+		
 		for(int d=0; d<2; d++)
 		{
 			singleBoxDims[d] = maxL;
 		}
-		if(!bIs2D)
-		{
+	
 		
-			if(imageSet.bMultiCh)
-			{
-				singleBoxDims[3] = maxL;
-			}
-			else
-			{
-				singleBoxDims[2] = maxL;
-			}
+		if(imageSet.bMultiCh)
+		{
+			singleBoxDims[3] = maxL;
 		}
+		else
+		{
+			singleBoxDims[2] = maxL;
+		}
+		
 		
 		for(int j = 0; j<nImgN;j++)
 		{		
@@ -359,6 +354,7 @@ public class UTExploreBDV < T extends RealType< T > & NativeType< T > >
 		{
 			centBox[d] = singleBoxDims[d]*0.5;
 		}
+
 		if(imageSet.bMultiCh)
 		{
 			centBox[2] = singleBoxDims[3]*0.5;
@@ -380,8 +376,10 @@ public class UTExploreBDV < T extends RealType< T > & NativeType< T > >
 		}
 		else
 		{
+
 			//change the order of C and Z
 			out =  Views.permute( intervalView, 2,3);
+
 		}	
 		
 		if(imageSet.nTimePoints == 1)
@@ -416,38 +414,28 @@ public class UTExploreBDV < T extends RealType< T > & NativeType< T > >
 		double scale;
 		long [][] nBox;
 
-		if(bIs2D)
+
+		nBox = new long [2][3];
+		
+		nBox[1][0] = singleBoxDims[0]*nCols;
+		nBox[1][1] = singleBoxDims[1]*nRows;
+
+		if(imageSet.bMultiCh)
 		{
-			nBox = new long [2][2];
+			nBox[1][2] = singleBoxDims[3];
 		}
 		else
 		{
-			nBox = new long [2][3];
+			nBox[1][2] = singleBoxDims[2];
 		}
-		nBox[1][0] = singleBoxDims[0]*nCols;
-		nBox[1][1] = singleBoxDims[1]*nRows;
-		if(bIs2D)
-		{
-			if(imageSet.bMultiCh)
-			{
-				nBox[1][2] = singleBoxDims[3];
-			}
-			else
-			{
-				nBox[1][2] = singleBoxDims[2];
-			}
-		}
+	
 		
 		double nW = (double)(nBox[1][0]-nBox[0][0])*globCal[0];
 		double nH = (double)(nBox[1][1]-nBox[0][1])*globCal[1];
 		double nWoff = (double)(2.0*nBox[0][0])*globCal[0];
 		double nHoff = (double)(2.0*nBox[0][1])*globCal[1];
-		double nDoff = 0.0;
+		double nDoff = (double)(1.0*nBox[1][2])*globCal[2];
 		
-		if(!bIs2D)
-		{
-			nDoff = (double)(1.0*nBox[1][2])*globCal[2];
-		}
 		
 		double sW = viewer.getWidth();
 		double sH = viewer.getHeight();

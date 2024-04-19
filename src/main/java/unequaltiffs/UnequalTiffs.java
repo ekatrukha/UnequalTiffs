@@ -210,8 +210,15 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		}
 		if(arg.equals("BrowseBDV"))
 		{
-			UTExploreBDV<T> exploreBDV = new UTExploreBDV<T>(imageSet);
-			exploreBDV.browseBDV(bIs2D);
+			if(!bIs2D)
+			{
+				UTExploreBDV<T> exploreBDV = new UTExploreBDV<T>(imageSet);
+				exploreBDV.browseBDV();
+			}
+			else
+			{
+				IJ.error("The input is 2D data, BDV/BVV views support only 3D");
+			}
 		}
 		if(arg.equals("BrowseBVV"))
 		{
@@ -223,9 +230,7 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 			}
 			else
 			{
-				IJ.log("The input is 2D data, starting BDV instead of BVV");
-				UTExploreBDV<T> exploreBDV = new UTExploreBDV<T>(imageSet);
-				exploreBDV.browseBDV(bIs2D);
+				IJ.error("The input is 2D data, BDV/BVV views support only 3D");
 			}
 		}
 	}
@@ -256,9 +261,9 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		@SuppressWarnings("rawtypes")
 		UnequalTiffs un = new UnequalTiffs();
 		//un.run("Montage");		
-		///un.run("Explore");
+		un.run("BrowseBDV");
 		
-		un.run("Concatenate");
+		//un.run("Concatenate");
 	
 	}
 
