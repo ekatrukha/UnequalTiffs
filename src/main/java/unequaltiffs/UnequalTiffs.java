@@ -42,6 +42,8 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		
 		DirectoryChooser dc = new DirectoryChooser ( "Choose a folder with TIFF images.." );
 		String sPath = dc.getDirectory();
+		if(sPath==null)
+			return;
 		IJ.log("UnequalTiffCombineMontage v."+sPluginVersion);
 		//if(arg.equals("Explore"))
 	//	{
@@ -54,141 +56,14 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 
 		//making montage
 		if(arg.equals("Montage"))
-		{
-			
-			//Calculate the number of rows and columns
-			//Based on MontageMaker, this tries to make the 
-			//montage as square as possible
-
-			int nCols = (int)Math.sqrt(nImgN);
-			int nRows = nCols;
-			int n = nImgN - nCols*nRows;
-			if (n>0) nCols += (int)Math.ceil((double)n/nRows);
-			final String[] sAlingMontage = new String[2];
-			sAlingMontage[0] = "Zero (origin)";
-			sAlingMontage[1] = "Center";
-			
-			final GenericDialog gdMontage = new GenericDialog( "Make montage" );
-			gdMontage.addNumericField("number of columns:", nCols, 0);
-			gdMontage.addNumericField("number of rows:", nRows, 0);
-			gdMontage.addChoice( "Align images by:", sAlingMontage, Prefs.get("UnequalTiffs.nAlignMontage", sAlingMontage[ALIGN_ZERO]) );
-			gdMontage.showDialog();
-			if (gdMontage.wasCanceled() )
-				return;
-			nCols = (int) gdMontage.getNextNumber();
-			nRows = (int) gdMontage.getNextNumber();
-			nAlignMontage = gdMontage.getNextChoiceIndex();
-			Prefs.set("UnequalTiffs.nAlignMontage", sAlingMontage[nAlignMontage]);
-			n = nImgN - nCols*nRows;
-			if (n>0) nCols += (int)Math.ceil((double)n/nRows);
-			IJ.log("Making montage with "+Integer.toString(nRows)+" rows and "+Integer.toString(nCols)+" columns.");
-
-			UTMontage<T> utM = new UTMontage<T>(imageSet);
-			Img<T> img_montage = utM.makeMontage(nRows, nCols, nAlignMontage);
-			ImagePlus ip_montage;
-			
-			ip_montage = ImageJFunctions.show(prepareMontageForImageJView(img_montage), "Montage" );
-			ip_montage.setCalibration(imageSet.cal);
-			utM.addCaptionsOverlay(imageSet.sFileNamesShort, ip_montage);
-			ip_montage.getWindow().addWindowListener(this);
-
-			IJ.log("Done.");
+		{			
+			mainMontage();
 		}
 		
 		//making concatenation
 		if(arg.equals("Concatenate"))
 		{
-			if(imageSet.sDims.length()>=5)
-			{
-				IJ.error("Images already are XYZTC, no free dimension to concatenate.\n Aborting.");
-				return;
-			}
-			String sConcatDim = "";
-			String sConcatOptions = "";
-			
-			//no need to ask for the dimension
-			if(imageSet.sDims.length() == 4)
-			{
-				if(imageSet.nChannels == 1)
-				{
-					sConcatDim = "C";
-					IJ.log("Concatenating along channel axis.");
-				}
-				if(imageSet.nTimePoints == 1)
-				{
-					sConcatDim = "T";
-					IJ.log("Concatenating along time.");
-				}
-				if(imageSet.nSlices == 1)
-				{
-					sConcatDim = "Z";
-					IJ.log("Concatenating along Z axis.");
-				}				
-			}
-			else
-			{				
-				if(imageSet.nSlices == 1)
-				{
-					sConcatOptions = sConcatOptions + "Z";
-				}
-				if(imageSet.nTimePoints == 1)
-				{
-					sConcatOptions = sConcatOptions + "T";
-				}
-				if(imageSet.nChannels == 1)
-				{
-					sConcatOptions = sConcatOptions + "C";
-				}
-			}
-			//ask user, what he wants as a concatenation axis
-			final GenericDialog gdConcat = new GenericDialog( "Concatenate" );
-			final String[] sAlingConc = new String[2];
-			String[] sConcatDimDial = null;
-			if (sConcatOptions.length()>0)
-			{
-				sConcatDimDial = new String[sAlingConc.length];
-				for (int i=0;i<sConcatOptions.length();i++)
-				{
-					sConcatDimDial[i]=sConcatOptions.substring(i, i+1);
-				}
-				gdConcat.addChoice( "Concatenate along axis:", sConcatDimDial, sConcatDimDial[0]);
-			}
-			
-			sAlingConc[0] = "Zero (origin)";
-			sAlingConc[1] = "Center";
-			gdConcat.addChoice( "Align images by:", sAlingConc, Prefs.get("UnequalTiffs.nAlignConc", sAlingConc[ALIGN_ZERO]) );
-			gdConcat.showDialog();
-			if (gdConcat.wasCanceled() )
-				return;
-			nAlignConc = gdConcat.getNextChoiceIndex();
-			Prefs.set("UnequalTiffs.nAlignConc", sAlingConc[nAlignMontage]);
-			if (sConcatOptions.length()>0)
-			{
-				sConcatDim = sConcatDimDial[gdConcat.getNextChoiceIndex()];
-				switch (sConcatDim)
-				{
-					case "C":
-						IJ.log("Concatenating along channel axis.");
-						break;
-					case "T":
-						IJ.log("Concatenating along time.");
-						break;
-					case "Z":
-						IJ.log("Concatenating along Z axis.");
-						break;
-				
-				}
-			}
-			UTConcatenate<T> utC = new UTConcatenate<T>(imageSet);
-			Img<T> img_conc = utC.concatenate( nAlignMontage, sConcatDim);
-			ImagePlus ip_conc = null;
-			
-			ip_conc = ImageJFunctions.show(img_conc, "Concatenated" );
-			ip_conc.setCalibration(imageSet.cal);
-//			//utM.addCaptionsOverlay(imageSet.sFileNamesShort, ip_montage);
-			ip_conc.getWindow().addWindowListener(this);
-//
-			IJ.log("Done.");
+			mainConcatenate();
 		}
 		boolean bIs2D = false;
 		//2D image
@@ -204,10 +79,6 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 			}
 		}	
 		
-		if(arg.equals("Concatenate"))
-		{
-			IJ.log("Not implemented yet.");
-		}
 		if(arg.equals("BrowseBDV"))
 		{
 			if(!bIs2D)
@@ -235,6 +106,144 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		}
 	}
 	
+	void mainMontage()
+	{
+		//Calculate the number of rows and columns
+		//Based on MontageMaker, this tries to make the 
+		//montage as square as possible
+
+		int nCols = (int)Math.sqrt(nImgN);
+		int nRows = nCols;
+		int n = nImgN - nCols*nRows;
+		if (n>0) nCols += (int)Math.ceil((double)n/nRows);
+		final String[] sAlingMontage = new String[2];
+		sAlingMontage[0] = "Zero (origin)";
+		sAlingMontage[1] = "Center";
+		
+		final GenericDialog gdMontage = new GenericDialog( "Make montage" );
+		gdMontage.addNumericField("number of columns:", nCols, 0);
+		gdMontage.addNumericField("number of rows:", nRows, 0);
+		gdMontage.addChoice( "Align images by:", sAlingMontage, Prefs.get("UnequalTiffs.nAlignMontage", sAlingMontage[ALIGN_ZERO]) );
+		gdMontage.showDialog();
+		if (gdMontage.wasCanceled() )
+			return;
+		nCols = (int) gdMontage.getNextNumber();
+		nRows = (int) gdMontage.getNextNumber();
+		nAlignMontage = gdMontage.getNextChoiceIndex();
+		Prefs.set("UnequalTiffs.nAlignMontage", sAlingMontage[nAlignMontage]);
+		n = nImgN - nCols*nRows;
+		if (n>0) nCols += (int)Math.ceil((double)n/nRows);
+		IJ.log("Making montage with "+Integer.toString(nRows)+" rows and "+Integer.toString(nCols)+" columns.");
+
+		UTMontage<T> utM = new UTMontage<T>(imageSet);
+		Img<T> img_montage = utM.makeMontage(nRows, nCols, nAlignMontage);
+		ImagePlus ip_montage;
+		
+		ip_montage = ImageJFunctions.show(prepareMontageForImageJView(img_montage), "Montage" );
+		ip_montage.setCalibration(imageSet.cal);
+		utM.addCaptionsOverlay(imageSet.sFileNamesShort, ip_montage);
+		ip_montage.getWindow().addWindowListener(this);
+
+		IJ.log("Done.");
+	}
+	
+	
+	void mainConcatenate()
+	{
+		if(imageSet.sDims.length()>=5)
+		{
+			IJ.error("Images already are XYZTC, no free dimension to concatenate.\n Aborting.");
+			return;
+		}
+		String sConcatDim = "";
+		String sConcatOptions = "";
+		
+		//no need to ask for the dimension
+		if(imageSet.sDims.length() == 4)
+		{
+			if(imageSet.nChannels == 1)
+			{
+				sConcatDim = "C";
+				IJ.log("Concatenating along channel axis.");
+			}
+			if(imageSet.nTimePoints == 1)
+			{
+				sConcatDim = "T";
+				IJ.log("Concatenating along time.");
+			}
+			if(imageSet.nSlices == 1)
+			{
+				sConcatDim = "Z";
+				IJ.log("Concatenating along Z axis.");
+			}				
+		}
+		else
+		{				
+			if(imageSet.nSlices == 1)
+			{
+				sConcatOptions = sConcatOptions + "Z";
+			}
+			if(imageSet.nTimePoints == 1)
+			{
+				sConcatOptions = sConcatOptions + "T";
+			}
+			if(imageSet.nChannels == 1)
+			{
+				sConcatOptions = sConcatOptions + "C";
+			}
+		}
+		//ask user, what he wants as a concatenation axis
+		final GenericDialog gdConcat = new GenericDialog( "Concatenate" );
+		final String[] sAlingConc = new String[2];
+		String[] sConcatDimDial = null;
+		if (sConcatOptions.length()>0)
+		{
+			sConcatDimDial = new String[sAlingConc.length];
+			for (int i=0;i<sConcatOptions.length();i++)
+			{
+				sConcatDimDial[i]=sConcatOptions.substring(i, i+1);
+			}
+			gdConcat.addChoice( "Concatenate along axis:", sConcatDimDial, sConcatDimDial[0]);
+		}
+		
+		sAlingConc[0] = "Zero (origin)";
+		sAlingConc[1] = "Center";
+		gdConcat.addChoice( "Align images by:", sAlingConc, Prefs.get("UnequalTiffs.nAlignConc", sAlingConc[ALIGN_ZERO]) );
+		gdConcat.showDialog();
+		if (gdConcat.wasCanceled() )
+			return;
+		
+		if (sConcatOptions.length()>0)
+		{
+			sConcatDim = sConcatDimDial[gdConcat.getNextChoiceIndex()];
+			switch (sConcatDim)
+			{
+				case "C":
+					IJ.log("Concatenating along channel axis.");
+					break;
+				case "T":
+					IJ.log("Concatenating along time.");
+					break;
+				case "Z":
+					IJ.log("Concatenating along Z axis.");
+					break;
+			
+			}
+		}
+		nAlignConc = gdConcat.getNextChoiceIndex();
+		Prefs.set("UnequalTiffs.nAlignConc", sAlingConc[nAlignMontage]);
+
+		UTConcatenate<T> utC = new UTConcatenate<T>(imageSet);
+		Img<T> img_conc = utC.concatenate( nAlignMontage, sConcatDim);
+		ImagePlus ip_conc = null;
+		
+		ip_conc = ImageJFunctions.show(prepareConcatForImageJView(img_conc,sConcatDim), "Concatenated" );
+		ip_conc.setCalibration(imageSet.cal);
+//		//utM.addCaptionsOverlay(imageSet.sFileNamesShort, ip_montage);
+		ip_conc.getWindow().addWindowListener(this);
+//
+		IJ.log("Done.");
+	}
 	
 	/** function orders input Img<T> to ImageJ order of XYCZT **/	
 	public IntervalView<T> prepareMontageForImageJView(final Img<T> img_montage)
@@ -252,6 +261,40 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 
 		return out;
 	}
+	/** function orders input Img<T> to ImageJ order of XYCZT **/	
+	public IntervalView<T> prepareConcatForImageJView(final Img<T> img_concat, String sConcatDim)
+	{
+		IntervalView<T> out = Views.interval(img_concat, img_concat);
+		switch (sConcatDim)
+		{
+			case "T":
+				if(!imageSet.bMultiCh)
+				{
+					out = Views.permute(Views.addDimension(out, 0, 0),2,out.numDimensions());
+				}
+				if(imageSet.nSlices==1)
+				{
+					out = Views.addDimension(out, 0, 0);					
+				}
+				out = Views.permute(out,3,4);
+				break;
+			case "C":
+				out = Views.permute(out,2,out.numDimensions()-1);
+				break;
+			case "Z":
+				if(imageSet.bMultiCh)
+				{
+					out = Views.permute(out,3,out.numDimensions()-1);
+				}
+				else
+				{
+					out = Views.permute(out,2,out.numDimensions()-1);
+				}
+				break;
+
+		}
+		return out;
+	}
 	
     
 	public static void main( final String[] args ) throws ImgIOException, IncompatibleTypeException
@@ -261,9 +304,9 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		@SuppressWarnings("rawtypes")
 		UnequalTiffs un = new UnequalTiffs();
 		//un.run("Montage");		
-		un.run("BrowseBDV");
+		//un.run("BrowseBDV");
 		
-		//un.run("Concatenate");
+		un.run("Concatenate");
 	
 	}
 
