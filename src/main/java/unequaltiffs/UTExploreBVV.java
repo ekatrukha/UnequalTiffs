@@ -17,6 +17,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.LinAlgHelpers;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
@@ -56,6 +57,9 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 	 * One step of rotation (radian).
 	 */
 	final private static double step = Math.PI / 180;
+	
+	double [] centBox = new double [3];
+	
 	Rotate dragRotate; 
 	
 	public UTExploreBVV(final UTImageSet<T> imageSet_)
@@ -64,7 +68,7 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 		singleBox = imageSet.getSingleBox();
 		intervals = new ArrayList<IntervalView<T>>();
 		nImgN = imageSet.im_dims.size();
-		dragRotate = new Rotate( 1.0 );
+		dragRotate = new Rotate( 0.3 );
 	}
 	
 	public void browseBVV()
@@ -114,95 +118,32 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 		behaviours.install( bvv_main.getBvvHandle().getTriggerbindings(), "my-new-behaviours" );
 		behaviours.behaviour( dragRotate, "print global pos", "D" );
 		
-		
-		//test transform
-		AffineTransform3D t = new AffineTransform3D();
-		t.identity();
-		t.rotate(2, Math.PI/4);
-
-		double [] tr = new double [3];
-		tr[2]=0.5*singleBox[1][2];
-		for ( SourceAndConverter< ? > source : viewer.state().getSources() )
-		{
-			
-			AffineTransform3D curr = new AffineTransform3D();
-			
-			
-			(( TransformedSource< ? > ) source.getSpimSource() ).getSourceTransform(0, 0, curr);
-			//curr.concatenate(viewer.state().getViewerTransform());
-			//curr.preConcatenate(viewer.state().getViewerTransform());
-			//curr.apply(centerC, centerC);
-			
-			//get center of the cube,
-			//transform it using current transform
-			//move there
-			//rotate
-			//move back
-			
-			
-			tr[0]=curr.get( 0, 3 )+0.5*singleBox[1][0];
-			tr[1]=curr.get( 1, 3 )+0.5*singleBox[1][1];
-			
-			AffineTransform3D tFinal = new AffineTransform3D();
-			tFinal.identity();
-			
-			tFinal.set( (-1.0)*(tr[0]), 0, 3 );
-			tFinal.set( (-1.0)*(tr[1]), 1, 3 );
-			tFinal.set( (-1.0)*(tr[2]), 2, 3 );
-			tFinal.preConcatenate(t);
-			tFinal.translate(tr);
-			
-			//tFinal.concatenate(t);
-		//	tFinal.set( (curr.get( 0, 3 )+0.5*singleBox[1][0]), 0, 3 );
-			//tFinal.set( (curr.get( 1, 3 )+0.5*singleBox[1][1]), 1, 3 );
-			//tFinal.set( (0.5*singleBox[1][2]), 2, 3 );
-
-			//affineDragCurrent.set( affineDragCurrent.get( 0, 3 ) - oX, 0, 3 );
-			//affineDragCurrent.set( affineDragCurrent.get( 1, 3 ) - oY, 1, 3 );
-			//(( TransformedSource< ? > ) source.getSpimSource() ).setIncrementalTransform(tFinal);
-			(( TransformedSource< ? > ) source.getSpimSource() ).setFixedTransform(tFinal);
-			
-		}
-		viewer.requestRepaint();
-	
 	}
 	
 	void setTransform(AffineTransform3D t)
 	{
-		double [] tr = new double [3];
-		tr[2]=0.5*singleBox[1][2];
+		AffineTransform3D curr = new AffineTransform3D();
+		AffineTransform3D currFixed = new AffineTransform3D();;
+		AffineTransform3D tFinal = new AffineTransform3D();;
+		double [] currShift = new double [3];
 		for ( SourceAndConverter< ? > source : viewer.state().getSources() )
 		{
 			
-			AffineTransform3D curr = new AffineTransform3D();
-			
-			
-			(( TransformedSource< ? > ) source.getSpimSource() ).getSourceTransform(0, 0, curr);
-			//curr.concatenate(viewer.state().getViewerTransform());
-			//curr.preConcatenate(viewer.state().getViewerTransform());
-			//curr.apply(centerC, centerC);
-			
-			tr[0]=curr.get( 0, 3 )+0.5*singleBox[1][0];
-			tr[1]=curr.get( 1, 3 )+0.5*singleBox[1][1];
-			
-			AffineTransform3D tFinal = new AffineTransform3D();
-			tFinal.identity();
-			tFinal.set( (-1.0)*(tr[0]), 0, 3 );
-			tFinal.set( (-1.0)*(tr[1]), 1, 3 );
-			tFinal.set( (-1.0)*(tr[2]), 2, 3 );
-			tFinal.preConcatenate(t);
-			tFinal.translate(tr);
-			
-			//tFinal.concatenate(t);
-		//	tFinal.set( (curr.get( 0, 3 )+0.5*singleBox[1][0]), 0, 3 );
-			//tFinal.set( (curr.get( 1, 3 )+0.5*singleBox[1][1]), 1, 3 );
-			//tFinal.set( (0.5*singleBox[1][2]), 2, 3 );
+			TransformedSource< ? > tS = (( TransformedSource< ? > ) source.getSpimSource() );
 
-			//affineDragCurrent.set( affineDragCurrent.get( 0, 3 ) - oX, 0, 3 );
-			//affineDragCurrent.set( affineDragCurrent.get( 1, 3 ) - oY, 1, 3 );
-			//(( TransformedSource< ? > ) source.getSpimSource() ).setIncrementalTransform(tFinal);
-			(( TransformedSource< ? > ) source.getSpimSource() ).setFixedTransform(tFinal);
+			tS.getSourceTransform(0, 0, curr);		
+			curr.apply(centBox, currShift);
+
+			tS.getFixedTransform(currFixed);
 			
+			tFinal.set(currFixed);
+			LinAlgHelpers.scale(currShift, -1.0, currShift);
+			tFinal.translate(currShift);
+			tFinal.preConcatenate(t);
+			LinAlgHelpers.scale(currShift, -1.0, currShift);
+			tFinal.translate(currShift);
+			
+			tS.setFixedTransform(tFinal);
 		}
 		viewer.requestRepaint();
 	}
@@ -238,17 +179,15 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 				nR++;
 			}
 		}
-		long[] currShift;
 		for(int i =0; i<nImgN;i++)
 		{		
-			currShift = new long[5];
-			for(int j=0;j<2;j++)
-			{
-				currShift[j]+=indexes_inv[i][j]*singleBox[1][j];
-			}
-			//intervals.add(Views.translate(getBDVIntervalView(i), currShift) );
 			intervals.add(getBDVIntervalView(i));
 		}
+		for(int d=0; d<2; d++)
+		{
+			centBox[d] = singleBox[1][d]*0.5;
+		}
+		centBox[2] = singleBox[1][3]*0.5;
 	}
 	
 	IntervalView<T> getBDVIntervalView(final int i)
@@ -360,9 +299,9 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 			//affineDragCurrent.set( affineDragCurrent.get( 0, 3 ) - oX, 0, 3 );
 			//affineDragCurrent.set( affineDragCurrent.get( 1, 3 ) - oY, 1, 3 );
 			final double v = step * speed;
-			//affineDragCurrent.rotate( 0, -dY * v );
-			//affineDragCurrent.rotate( 1, dX * v );
-			affineDragCurrent.rotate( 2, dX * v );
+			affineDragCurrent.rotate( 0, -dY * v );
+			affineDragCurrent.rotate( 1, dX * v );
+			//affineDragCurrent.rotate( 2, dX * v );
 
 			// center un-shift
 			//affineDragCurrent.set( affineDragCurrent.get( 0, 3 ) + oX, 0, 3 );
