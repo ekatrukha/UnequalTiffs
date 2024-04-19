@@ -11,7 +11,7 @@ import ij.Prefs;
 import ij.gui.GenericDialog;
 import ij.io.DirectoryChooser;
 import ij.plugin.PlugIn;
-
+import io.scif.config.SCIFIOConfig.ImgMode;
 import io.scif.img.ImgIOException;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
@@ -41,10 +41,16 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		
 		DirectoryChooser dc = new DirectoryChooser ( "Choose a folder with TIFF images.." );
 		String sPath = dc.getDirectory();
+		IJ.log("UnequalTiffCombineMontage v."+sPluginVersion);
+		if(arg.equals("Explore"))
+		{
+			imageSet.openMode = ImgMode.ARRAY;
+			IJ.log("reading all images");
+		}
 		if(!imageSet.initializeAndCheckConsistensy(sPath, sFileExtension))
 			return;
 		nImgN = imageSet.imgs_in.size();
-		IJ.log("UnequalTiffCombineMontage v."+sPluginVersion);
+
 		//making montage
 		if(arg.equals("Montage"))
 		{

@@ -1,7 +1,6 @@
 package unequaltiffs;
 
-import java.awt.Color;
-import java.awt.image.IndexColorModel;
+
 import java.util.ArrayList;
 
 import org.scijava.ui.behaviour.DragBehaviour;
@@ -15,11 +14,7 @@ import btbvv.core.VolumeViewerPanel;
 import btbvv.vistools.Bvv;
 import btbvv.vistools.BvvFunctions;
 import btbvv.vistools.BvvStackSource;
-import ij.CompositeImage;
-import ij.ImagePlus;
-import ij.process.LUT;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.img.Img;
+
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
@@ -90,7 +85,9 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 		Bvv Tempbvv = BvvFunctions.show( Bvv.options().
 				dCam(2000.0).
 				dClipNear(1000).
-				dClipFar(1000)
+				dClipFar(1000)//.
+				//cacheBlockSize( 32 ).
+				//maxCacheSizeInMB( 4000)
 				);
 		double[] currShift;
 		AffineTransform3D arrTr = new AffineTransform3D();
@@ -107,7 +104,7 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 			arrTr.translate(currShift);
 			if(!imageSet.bMultiCh)
 			{
-				bvv_sources.add(BvvFunctions.show( intervals.get(i), imageSet.sFileNamesShort[i], Bvv.options().addTo(Tempbvv).sourceTransform(arrTr)));
+				bvv_sources.add(BvvFunctions.show(intervals.get(i), imageSet.sFileNamesShort[i], Bvv.options().addTo(Tempbvv).sourceTransform(arrTr)));
 				bvv_sources.get(i).setColor( new ARGBType( imageSet.colorsCh[0].getRGB() ));
 			}
 			else
@@ -127,7 +124,7 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 		resetViewXY();
 		final SourceGroup g = new SourceGroup();
 		viewer.state().addGroup( g );
-		final String a_group_name = "all";
+		String a_group_name = "all";
 		viewer.state().setGroupName( g, a_group_name );
 		for(int i=0;i<bvv_sources.size();i++)
 		{
@@ -135,6 +132,21 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 		}
 		viewer.state().setCurrentGroup(g);
 		viewer.state().setGroupActive(g, true);
+		if(imageSet.bMultiCh)
+		{
+			for(int nCh=0;nCh<imageSet.nChannels;nCh++)
+			{
+				final SourceGroup gCh = new SourceGroup();
+				viewer.state().addGroup( gCh );
+				a_group_name = "ch_"+Integer.toString(nCh+1)+"_all";
+				viewer.state().setGroupName( gCh, a_group_name );
+				for(int i=0;i<nImgN;i++)
+				{
+					viewer.state().addSourcesToGroup( bvv_sources.get(i*imageSet.nChannels+nCh).getSources(), gCh );
+				}
+	
+			}
+		}
 		
 		Behaviours behaviours = new Behaviours( new InputTriggerConfig() );
 		behaviours.install( bvv_main.getBvvHandle().getTriggerbindings(), "my-new-behaviours" );

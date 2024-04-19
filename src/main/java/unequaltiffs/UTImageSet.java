@@ -49,6 +49,8 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 	
 	ArrayList<SCIFIOImgPlus< T >> filesOpened = null;
 	
+	public ImgMode openMode = ImgMode.CELL;
+	
 	/** function reads all tiffs from the sPath and ensures they have the same
 	 * dimensions and number of channels.
 	 * If succeeded, fills all member variables of this class **/
@@ -125,7 +127,7 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 		IJ.showProgress(0,filenames.size());
 		ImgOpener imgOpener = new ImgOpener();
 		SCIFIOConfig config = new SCIFIOConfig();
-		config.imgOpenerSetImgModes( ImgMode.CELL );
+		config.imgOpenerSetImgModes(openMode );
 		//Img< ? > firstImg =  imgOpener.openImgs( filenames.get(0), config ).get( 0 );
 		
 		filesOpened = new ArrayList<SCIFIOImgPlus< T >>();
