@@ -1,5 +1,7 @@
 package unequaltiffs;
 
+import java.awt.Color;
+import java.awt.image.IndexColorModel;
 import java.util.ArrayList;
 
 import org.scijava.ui.behaviour.DragBehaviour;
@@ -13,9 +15,14 @@ import btbvv.core.VolumeViewerPanel;
 import btbvv.vistools.Bvv;
 import btbvv.vistools.BvvFunctions;
 import btbvv.vistools.BvvStackSource;
+import ij.CompositeImage;
+import ij.ImagePlus;
+import ij.process.LUT;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.Img;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.LinAlgHelpers;
 import net.imglib2.view.IntervalView;
@@ -36,7 +43,7 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 	long [][] nFinalBox;
 	public double [] globCal;
 	ArrayList<BvvStackSource< ? >> bvv_sources = new ArrayList<BvvStackSource< ? >>();
-	ArrayList<AffineTransform3D> arrTr = new ArrayList<AffineTransform3D>();
+
 	public VolumeViewerPanel viewer;
 	/** main instance of BVV **/
 	public  BvvStackSource< ? > bvv_main = null;
@@ -77,6 +84,7 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 		globCal[0]=imageSet.cal.pixelWidth;
 		globCal[1]=imageSet.cal.pixelHeight;
 		globCal[2]=imageSet.cal.pixelDepth;
+		
 		makeIntervals();
 	
 		Bvv Tempbvv = BvvFunctions.show( Bvv.options().
@@ -85,18 +93,32 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 				dClipFar(1000)
 				);
 		double[] currShift;
+		AffineTransform3D arrTr = new AffineTransform3D();
 		for(int i=0;i<nImgN;i++)
 		{
 	
-			arrTr.add(new AffineTransform3D() );
-			arrTr.get(i).identity();
+			
+			arrTr.identity();
 			currShift = new double[5];
 			for(int j=0;j<2;j++)
 			{
 				currShift[j]+=indexes_inv[i][j]*singleBox[1][j];
 			}
-			arrTr.get(i).translate(currShift);
-			bvv_sources.add(BvvFunctions.show( intervals.get(i), imageSet.sFileNamesShort[i], Bvv.options().addTo(Tempbvv).sourceTransform(arrTr.get(i))));
+			arrTr.translate(currShift);
+			if(!imageSet.bMultiCh)
+			{
+				bvv_sources.add(BvvFunctions.show( intervals.get(i), imageSet.sFileNamesShort[i], Bvv.options().addTo(Tempbvv).sourceTransform(arrTr)));
+				bvv_sources.get(i).setColor( new ARGBType( imageSet.colorsCh[0].getRGB() ));
+			}
+			else
+			{
+				for(int nCh = 0; nCh< imageSet.nChannels;nCh++)
+				{
+					bvv_sources.add(BvvFunctions.show( Views.hyperSlice(intervals.get(i),4,nCh), imageSet.sFileNamesShort[i]+"_ch"+Integer.toString(nCh+1), Bvv.options().addTo(Tempbvv).sourceTransform(arrTr)));
+					bvv_sources.get(bvv_sources.size()-1).setColor( new ARGBType( imageSet.colorsCh[nCh].getRGB() ));
+				}
+			}
+			
 		}
 		bvv_main = bvv_sources.get(0);
 
@@ -107,7 +129,7 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 		viewer.state().addGroup( g );
 		final String a_group_name = "all";
 		viewer.state().setGroupName( g, a_group_name );
-		for(int i=0;i<nImgN;i++)
+		for(int i=0;i<bvv_sources.size();i++)
 		{
 			viewer.state().addSourcesToGroup( bvv_sources.get(i).getSources(), g );
 		}
@@ -123,27 +145,29 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 	void setTransform(AffineTransform3D t)
 	{
 		AffineTransform3D curr = new AffineTransform3D();
-		AffineTransform3D currFixed = new AffineTransform3D();;
-		AffineTransform3D tFinal = new AffineTransform3D();;
+		AffineTransform3D currFixed = new AffineTransform3D();
+		AffineTransform3D tFinal = new AffineTransform3D();
 		double [] currShift = new double [3];
-		for ( SourceAndConverter< ? > source : viewer.state().getSources() )
+		
+		//bvv_sources.get(0).g
+		for (int i =0; i<bvv_sources.size();i++)
 		{
-			
-			TransformedSource< ? > tS = (( TransformedSource< ? > ) source.getSpimSource() );
-
-			tS.getSourceTransform(0, 0, curr);		
-			curr.apply(centBox, currShift);
-
-			tS.getFixedTransform(currFixed);
-			
-			tFinal.set(currFixed);
-			LinAlgHelpers.scale(currShift, -1.0, currShift);
-			tFinal.translate(currShift);
-			tFinal.preConcatenate(t);
-			LinAlgHelpers.scale(currShift, -1.0, currShift);
-			tFinal.translate(currShift);
-			
-			tS.setFixedTransform(tFinal);
+			for ( SourceAndConverter< ? > source :bvv_sources.get(i).getSources() )	
+			{
+				
+				TransformedSource< ? > tS = (( TransformedSource< ? > ) source.getSpimSource() );
+	
+				tS.getSourceTransform(0, 0, curr);		
+				curr.apply(centBox, currShift);
+				tS.getFixedTransform(currFixed);			
+				tFinal.set(currFixed);
+				LinAlgHelpers.scale(currShift, -1.0, currShift);
+				tFinal.translate(currShift);
+				tFinal.preConcatenate(t);
+				LinAlgHelpers.scale(currShift, -1.0, currShift);
+				tFinal.translate(currShift);				
+				tS.setFixedTransform(tFinal);
+			}
 		}
 		viewer.requestRepaint();
 	}
@@ -179,39 +203,86 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 				nR++;
 			}
 		}
-		for(int i =0; i<nImgN;i++)
-		{		
-			intervals.add(getBDVIntervalView(i));
+		
+		//adjust box dimensions to allow rotation 
+		
+		long maxL = Math.max(singleBox[1][0],singleBox[1][1]);
+		if(imageSet.bMultiCh)
+		{
+			maxL = Math.max(maxL, singleBox[1][3]);
 		}
+		else
+		{
+			maxL = Math.max(maxL, singleBox[1][2]);
+		}
+		for(int d=0; d<2; d++)
+		{
+			singleBox[1][d] = maxL;
+		}
+		if(imageSet.bMultiCh)
+		{
+			singleBox[1][3] = maxL;
+		}
+		else
+		{
+			singleBox[1][2] = maxL;
+		}
+		
+		for(int j = 0; j<nImgN;j++)
+		{		
+			long [] nShifts = new long[imageSet.nDimN];
+			for(int i = 0; i<imageSet.im_dims.size();i++)
+			{
+				for(int d=0;d<imageSet.nDimN;d++)
+				{
+					if(!(imageSet.bMultiCh && d == 2))
+					{
+						nShifts[d] = (int) Math.floor(0.5*(singleBox[1][d]-imageSet.im_dims.get(j)[d]));
+					}
+				}
+			}
+			intervals.add(getBDVIntervalView(
+					Views.translate(imageSet.imgs_in.get(j),nShifts)));
+		}
+		
+		
+		//center of the box
 		for(int d=0; d<2; d++)
 		{
 			centBox[d] = singleBox[1][d]*0.5;
 		}
-		centBox[2] = singleBox[1][3]*0.5;
+		if(imageSet.bMultiCh)
+		{
+			centBox[2] = singleBox[1][3]*0.5;
+		}
+		else
+		{
+			centBox[2] = singleBox[1][2]*0.5;
+		}
 	}
 	
-	IntervalView<T> getBDVIntervalView(final int i)
+	IntervalView<T> getBDVIntervalView(IntervalView<T> intervalView)
 	{
 		IntervalView<T> out;
 		
 		if(!imageSet.bMultiCh)
 		{
 			//add dimension for the channels
-			out = Views.addDimension(imageSet.imgs_in.get(i), 0, 0);
+			out = Views.addDimension( intervalView, 0, 0);
 		}
 		else
 		{
 			//change the order of C and Z
-			out =  Views.permute(imageSet.imgs_in.get(i), 2,3);
+			out =  Views.permute( intervalView, 2,3);
 		}	
 		
-		if(imageSet.nTimePoints ==1)
+		if(imageSet.nTimePoints == 1)
 		{
 			out = Views.addDimension(out, 0, 0);
 			//test = all_ch_RAI.dimensionsAsLongArray();
 			if(imageSet.nChannels==1)
 			{
-				out =Views.permute(out, 3,4);
+				out = Views.permute(out, 3,4);
 			}
 			//test = all_ch_RAI.dimensionsAsLongArray();
 		}
@@ -230,6 +301,7 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 		t.scale(globCal[0],globCal[1],globCal[2]);
 		viewer.state().setViewerTransform(t);
 	}
+	
 	public void resetViewXY()
 	{
 		
@@ -264,9 +336,7 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 
 		t.scale(globCal[0]*scale, globCal[1]*scale, globCal[2]*scale);
 		t.translate(0.5*(sW-scale*(nW+nWoff)),0.5*(sH-scale*(nH+nHoff)),(-0.5)*scale*(nDoff));
-		
-		//AnisotropicTransformAnimator3D anim = new AnisotropicTransformAnimator3D(viewer.state().getViewerTransform(),t,0,0,(long)(btdata.nAnimationDuration*0.5));
-		//viewer.setTransformAnimator(anim);
+
 		viewer.state().setViewerTransform(t);
 			
 	}
@@ -315,4 +385,6 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 		public void end( final int x, final int y )
 		{}
 	}
+	
+
 }

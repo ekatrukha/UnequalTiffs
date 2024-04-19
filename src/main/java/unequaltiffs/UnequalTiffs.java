@@ -97,7 +97,7 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 			UTExploreBDV<T> exploreBDV = new UTExploreBDV<T>(imageSet);
 			exploreBDV.browseBDV();
 		}
-		if(arg.equals("BrowseBVV"))
+		if(arg.equals("Explore"))
 		{
 			UTExploreBVV<T> exploreBVV = new UTExploreBVV<T>(imageSet);
 			exploreBVV.browseBVV();
@@ -130,7 +130,7 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		@SuppressWarnings("rawtypes")
 		UnequalTiffs un = new UnequalTiffs();
 		//un.run("Montage");		
-		un.run("BrowseBVV");
+		un.run("Explore");
 	
 	}
 

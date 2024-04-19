@@ -1,5 +1,7 @@
 package unequaltiffs;
 
+import java.awt.Color;
+import java.awt.image.IndexColorModel;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,9 +11,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.measure.Calibration;
+import ij.process.LUT;
 import io.scif.config.SCIFIOConfig;
 import io.scif.config.SCIFIOConfig.ImgMode;
 import io.scif.img.ImgOpener;
@@ -36,6 +40,12 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 	
 	long[][] singleBox = null;
 	public boolean bInit = false;
+	
+	/** colors for each channel **/
+	public Color [] colorsCh;
+	
+	/** intensity range for channels **/
+	public double [][] channelRanges;	
 	
 	ArrayList<SCIFIOImgPlus< T >> filesOpened = null;
 	
@@ -85,6 +95,7 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 		nChannels = ipFirst.getNChannels();
 		nSlices = ipFirst.getNSlices();
 		nTimePoints = ipFirst.getNFrames();
+		getChannelsColors(ipFirst);
 		if(nChannels>1)
 		{
 			bMultiCh = true;
@@ -230,5 +241,52 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 			}			
 		}
 		return singleBox;
+	}
+	
+	/** creates and fills array colorsCh with channel colors,
+	 * taken from Christian Tischer reply in this thread
+	 * https://forum.image.sc/t/composite-image-channel-color/45196/3 **/
+	public void getChannelsColors(ImagePlus imp)
+	{
+		colorsCh = new Color[imp.getNChannels()];
+		channelRanges = new double [2][imp.getNChannels()];
+	      for ( int c = 0; c < imp.getNChannels(); ++c )
+	        {
+	            if ( imp instanceof CompositeImage )
+	            {
+	                CompositeImage compositeImage = ( CompositeImage ) imp;
+					LUT channelLut = compositeImage.getChannelLut( c + 1 );
+					int mode = compositeImage.getMode();
+					if ( channelLut == null || mode == CompositeImage.GRAYSCALE )
+					{
+						colorsCh[c] = Color.WHITE;
+					}
+					else
+					{
+						IndexColorModel cm = channelLut.getColorModel();
+						if ( cm == null )
+						{
+							colorsCh[c] = Color.WHITE;
+						}
+						else
+						{
+							int i = cm.getMapSize() - 1;
+							colorsCh[c] = new Color(cm.getRed( i ) ,cm.getGreen( i ) ,cm.getBlue( i ) );
+
+						}
+
+					}
+
+					compositeImage.setC( c + 1 );
+					channelRanges[0][c]=(int)imp.getDisplayRangeMin();
+					channelRanges[1][c]=(int)imp.getDisplayRangeMax();
+	            }
+	            else
+	            {
+	            	colorsCh[c] = Color.WHITE;
+	            	channelRanges[0][c]=(int)imp.getDisplayRangeMin();
+	            	channelRanges[1][c]=(int)imp.getDisplayRangeMax();
+	            }
+	        }
 	}
 }
