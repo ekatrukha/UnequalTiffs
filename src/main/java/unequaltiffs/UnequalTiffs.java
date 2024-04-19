@@ -274,9 +274,10 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 				}
 				if(imageSet.nSlices==1)
 				{
-					out = Views.addDimension(out, 0, 0);					
+					out = Views.addDimension(out, 0, 0);
+					out = Views.permute(out,3,4);
 				}
-				out = Views.permute(out,3,4);
+				
 				break;
 			case "C":
 				out = Views.permute(out,2,out.numDimensions()-1);
