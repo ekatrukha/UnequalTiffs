@@ -37,6 +37,7 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 	public Calibration cal;
 	public int [] ipDim;
 	public int nDimN;
+	public String sDims;
 	
 	long[][] singleBox = null;
 	public boolean bInit = false;
@@ -93,16 +94,11 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 		ImagePlus ipFirst = IJ.openImage(filenames.get(0));
 		cal = ipFirst.getCalibration();
 		ipDim = ipFirst.getDimensions();
-		String sDims = "XY";
+		sDims = "XY";
 		nChannels = ipFirst.getNChannels();
 		nSlices = ipFirst.getNSlices();
 		nTimePoints = ipFirst.getNFrames();
 		getChannelsColors(ipFirst);
-		if(nChannels>1)
-		{
-			bMultiCh = true;
-			sDims = sDims + "C";
-		}
 		if(nSlices>1)
 		{
 			sDims = sDims + "Z";
@@ -111,6 +107,13 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 		{
 			sDims = sDims + "T";
 		}
+
+		if(nChannels>1)
+		{
+			bMultiCh = true;
+			sDims = sDims + "C";
+		}
+
 		sDims = sDims +" and " + Integer.toString(ipFirst.getBitDepth())+"-bit";
 		ipFirst.close();
 		

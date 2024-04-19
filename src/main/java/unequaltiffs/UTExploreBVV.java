@@ -387,7 +387,7 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 		double nH = (double)(nBox[1][1]-nBox[0][1])*globCal[1];
 		double nWoff = (double)(2.0*nBox[0][0])*globCal[0];
 		double nHoff = (double)(2.0*nBox[0][1])*globCal[1];
-		double nDoff = (double)(2.0*nBox[0][2])*globCal[2];
+		double nDoff = (double)(2.0*nBox[1][2])*globCal[2];
 		
 		double sW = viewer.getWidth();
 		double sH = viewer.getHeight();

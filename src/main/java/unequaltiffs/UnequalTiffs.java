@@ -42,11 +42,11 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		DirectoryChooser dc = new DirectoryChooser ( "Choose a folder with TIFF images.." );
 		String sPath = dc.getDirectory();
 		IJ.log("UnequalTiffCombineMontage v."+sPluginVersion);
-		if(arg.equals("Explore"))
-		{
-			imageSet.openMode = ImgMode.ARRAY;
-			IJ.log("reading all images");
-		}
+		//if(arg.equals("Explore"))
+	//	{
+		//	imageSet.openMode = ImgMode.ARRAY;
+			//IJ.log("reading all images");
+		//}
 		if(!imageSet.initializeAndCheckConsistensy(sPath, sFileExtension))
 			return;
 		nImgN = imageSet.imgs_in.size();
@@ -93,6 +93,19 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 
 			IJ.log("Done.");
 		}
+		boolean bIs2D = false;
+		//2D image
+		if(imageSet.sDims.length()<3)
+		{
+			bIs2D = true;
+		}
+		else
+		{
+			if(imageSet.sDims.charAt(2)!='Z')
+			{
+				bIs2D = true;
+			}
+		}	
 		
 		if(arg.equals("Concatenate"))
 		{
@@ -101,12 +114,22 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		if(arg.equals("BrowseBDV"))
 		{
 			UTExploreBDV<T> exploreBDV = new UTExploreBDV<T>(imageSet);
-			exploreBDV.browseBDV();
+			exploreBDV.browseBDV(bIs2D);
 		}
-		if(arg.equals("Explore"))
+		if(arg.equals("BrowseBVV"))
 		{
-			UTExploreBVV<T> exploreBVV = new UTExploreBVV<T>(imageSet);
-			exploreBVV.browseBVV();
+			
+			if(!bIs2D)
+			{
+				UTExploreBVV<T> exploreBVV = new UTExploreBVV<T>(imageSet);
+				exploreBVV.browseBVV();
+			}
+			else
+			{
+				IJ.log("The input is 2D data, starting BDV instead of BVV");
+				UTExploreBDV<T> exploreBDV = new UTExploreBDV<T>(imageSet);
+				exploreBDV.browseBDV(bIs2D);
+			}
 		}
 	}
 	
@@ -136,7 +159,9 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		@SuppressWarnings("rawtypes")
 		UnequalTiffs un = new UnequalTiffs();
 		//un.run("Montage");		
-		un.run("Explore");
+		///un.run("Explore");
+		
+		un.run("BrowseBDV");
 	
 	}
 
