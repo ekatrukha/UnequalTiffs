@@ -11,7 +11,6 @@ import ij.Prefs;
 import ij.gui.GenericDialog;
 import ij.io.DirectoryChooser;
 import ij.plugin.PlugIn;
-import io.scif.config.SCIFIOConfig.ImgMode;
 import io.scif.img.ImgIOException;
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
@@ -23,7 +22,7 @@ import net.imglib2.view.Views;
 
 public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implements PlugIn, WindowListener {
 
-	final String sPluginVersion = "0.0.2";
+	final String sPluginVersion = "0.1.0";
 
 
 	int nImgN;

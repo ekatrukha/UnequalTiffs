@@ -11,7 +11,7 @@
 
 	<groupId>nl.uu.science.cellbiology</groupId>
 	<artifactId>unequaltiffs</artifactId>
-	<version>0.0.2-SNAPSHOT</version>
+	<version>0.1.0</version>
 
 	<name>UnequalTiffs</name>
 	<description>Making montage or concatenate tiff images of different sizes</description>
