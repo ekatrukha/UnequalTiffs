@@ -304,10 +304,10 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		new ImageJ();
 		@SuppressWarnings("rawtypes")
 		UnequalTiffs un = new UnequalTiffs();
-		//un.run("Montage");		
+		un.run("Montage");		
 		//un.run("BrowseBDV");
 		
-		un.run("Concatenate");
+		//un.run("Concatenate");
 	
 	}
 

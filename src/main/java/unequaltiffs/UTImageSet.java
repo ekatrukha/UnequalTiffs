@@ -93,29 +93,26 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 		IJ.log("Analyzing dimensions:");
 		
 		ImagePlus ipFirst = IJ.openImage(filenames.get(0));
+		getChannelsColors(ipFirst);
 		cal = ipFirst.getCalibration();
 		ipDim = ipFirst.getDimensions();
+		
 		sDims = "XY";
 		nChannels = ipFirst.getNChannels();
 		nSlices = ipFirst.getNSlices();
 		nTimePoints = ipFirst.getNFrames();
-		getChannelsColors(ipFirst);
-		if(nSlices>1)
-		{
-			sDims = sDims + "Z";
-		}
-		if(nTimePoints>1)
-		{
-			sDims = sDims + "T";
-		}
-
+		
+		//tesxt strings with dimensions
+		sDims = getDimensionsTextXYZTC(ipFirst);
+		String sIJDims = getDimensionsTextImageJ(ipFirst);
+		
 		if(nChannels>1)
 		{
 			bMultiCh = true;
-			sDims = sDims + "C";
 		}
 
 		String sDimsOut = sDims +" and " + Integer.toString(ipFirst.getBitDepth())+"-bit";
+	
 		ipFirst.close();
 		
 		if(bMultiCh)
@@ -148,6 +145,14 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 		imgs_in = new ArrayList<Img<T>>();
 		imgs_in.add((Img<T>) filesOpened.get(0).getImg());
 		im_dims.add(filesOpened.get(0).getImg().dimensionsAsLongArray());
+		
+		long [] dimsMin = new long [nDimN];
+		long [] dimsMax = new long [nDimN];
+		for(int d=0;d<nDimN;d++)
+		{
+			dimsMin[d]=im_dims.get(0)[d];
+			dimsMax[d]=im_dims.get(0)[d];
+		}
 		for(int i=1;i<filenames.size();i++)
 		{
 			IJ.showProgress(i,filenames.size());
@@ -169,6 +174,20 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 			}
 			//IJ.log(Integer.toString(imageCell.numDimensions()));
 			im_dims.add(filesOpened.get(i).getImg().dimensionsAsLongArray());
+			long currDim;
+			for(int d=0;d<nDimN;d++)
+			{
+				currDim = im_dims.get(i)[d];
+				if(currDim<dimsMin[d])
+				{
+					dimsMin[d]=currDim;
+				}
+				if(currDim>dimsMax[d])
+				{
+					dimsMax[d]=currDim;
+				}
+			}
+			
 			if(bMultiCh)
 			{
 				if(im_dims.get(i)[2]!=nChannels)
@@ -181,7 +200,12 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 
 		}
 		IJ.showStatus("Loading files....done.");
+		//pring min max of dimensions
 		
+		for(int d=0;d<nDimN;d++)
+		{
+			IJ.log("Axis "+sIJDims.charAt(d)+" min: "+Long.toString(dimsMin[d])+" max: "+Long.toString(dimsMax[d]));
+		}
 		IJ.showProgress(2,2);
 		bInit = true;
 		return true;
@@ -294,5 +318,51 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 	            	channelRanges[1][c]=(int)imp.getDisplayRangeMax();
 	            }
 	        }
+	}
+    /** returns dimensions of the ImagePlus in XYZTC format**/
+	public static String getDimensionsTextXYZTC(final ImagePlus ip)
+	{
+		String sDims = "XY";
+		
+		if(ip.getNSlices()>1)
+		{
+			sDims = sDims + "Z";
+		}
+		
+		if(ip.getNFrames()>1)
+		{
+			sDims = sDims + "T";
+		}
+		
+		if(ip.getNChannels()>1)
+		{
+			sDims = sDims + "C";
+		}
+
+		return sDims;
+	}
+    /** returns dimensions of the ImagePlus in XYCZT format**/
+	public static String getDimensionsTextImageJ(final ImagePlus ip)
+	{
+		String sDims = "XY";
+		
+		if(ip.getNChannels()>1)
+		{
+			sDims = sDims + "C";
+		}
+		
+		if(ip.getNSlices()>1)
+		{
+			sDims = sDims + "Z";
+		}
+		
+		if(ip.getNFrames()>1)
+		{
+			sDims = sDims + "T";
+		}
+		
+
+
+		return sDims;
 	}
 }
