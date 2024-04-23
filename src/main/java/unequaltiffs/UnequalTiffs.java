@@ -199,7 +199,7 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		String[] sConcatDimDial = null;
 		if (sConcatOptions.length()>0)
 		{
-			sConcatDimDial = new String[sAlingConc.length];
+			sConcatDimDial = new String[sConcatOptions.length()];
 			for (int i=0;i<sConcatOptions.length();i++)
 			{
 				sConcatDimDial[i]=sConcatOptions.substring(i, i+1);
@@ -232,10 +232,10 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 			}
 		}
 		nAlignConc = gdConcat.getNextChoiceIndex();
-		Prefs.set("UnequalTiffs.nAlignConc", sAlingConc[nAlignMontage]);
-		IJ.log("Align images by:"+sAlingConc[nAlignMontage]+".");
+		Prefs.set("UnequalTiffs.nAlignConc", sAlingConc[nAlignConc]);
+
 		UTConcatenate<T> utC = new UTConcatenate<T>(imageSet);
-		Img<T> img_conc = utC.concatenate( nAlignMontage, sConcatDim);
+		Img<T> img_conc = utC.concatenate( nAlignConc, sConcatDim);
 		ImagePlus ip_conc = null;
 		
 		ip_conc = ImageJFunctions.show(prepareConcatForImageJView(img_conc,sConcatDim), "Concatenated" );
@@ -305,10 +305,10 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		new ImageJ();
 		@SuppressWarnings("rawtypes")
 		UnequalTiffs un = new UnequalTiffs();
-		un.run("Montage");		
+		//un.run("Montage");		
 		//un.run("BrowseBDV");
 		
-		//un.run("Concatenate");
+		un.run("Concatenate");
 	
 	}
 
