@@ -233,7 +233,7 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		}
 		nAlignConc = gdConcat.getNextChoiceIndex();
 		Prefs.set("UnequalTiffs.nAlignConc", sAlingConc[nAlignConc]);
-
+		IJ.log("Align images by:"+sAlingConc[nAlignConc]+".");
 		UTConcatenate<T> utC = new UTConcatenate<T>(imageSet);
 		Img<T> img_conc = utC.concatenate( nAlignConc, sConcatDim);
 		ImagePlus ip_conc = null;
