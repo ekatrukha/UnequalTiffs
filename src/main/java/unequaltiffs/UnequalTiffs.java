@@ -133,7 +133,9 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		n = nImgN - nCols*nRows;
 		if (n>0) nCols += (int)Math.ceil((double)n/nRows);
 		IJ.log("Making montage with "+Integer.toString(nRows)+" rows and "+Integer.toString(nCols)+" columns.");
-
+		
+		IJ.log("Align images by:"+sAlingMontage[nAlignMontage]+".");
+		
 		UTMontage<T> utM = new UTMontage<T>(imageSet);
 		Img<T> img_montage = utM.makeMontage(nRows, nCols, nAlignMontage);
 		ImagePlus ip_montage;
@@ -231,7 +233,7 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		}
 		nAlignConc = gdConcat.getNextChoiceIndex();
 		Prefs.set("UnequalTiffs.nAlignConc", sAlingConc[nAlignMontage]);
-
+		IJ.log("Align images by:"+sAlingConc[nAlignMontage]+".");
 		UTConcatenate<T> utC = new UTConcatenate<T>(imageSet);
 		Img<T> img_conc = utC.concatenate( nAlignMontage, sConcatDim);
 		ImagePlus ip_conc = null;
