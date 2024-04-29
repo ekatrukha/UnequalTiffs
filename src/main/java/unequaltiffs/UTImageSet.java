@@ -39,6 +39,7 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 	public int [] ipDim;
 	public int nDimN;
 	public String sDims;
+	public String sIJDims;
 	
 	long[] singleBoxDims = null;
 	public boolean bInit = false;
@@ -102,9 +103,9 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 		nSlices = ipFirst.getNSlices();
 		nTimePoints = ipFirst.getNFrames();
 		
-		//tesxt strings with dimensions
+		//text strings with dimensions
 		sDims = getDimensionsTextXYZTC(ipFirst);
-		String sIJDims = getDimensionsTextImageJ(ipFirst);
+		sIJDims = getDimensionsTextImageJ(ipFirst);
 		
 		if(nChannels>1)
 		{

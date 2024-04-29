@@ -1,5 +1,7 @@
 package unequaltiffs;
 
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
@@ -12,6 +14,7 @@ import ij.gui.GenericDialog;
 import ij.io.DirectoryChooser;
 import ij.plugin.PlugIn;
 import io.scif.img.ImgIOException;
+
 import net.imglib2.exception.IncompatibleTypeException;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
@@ -239,10 +242,10 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		ImagePlus ip_conc = null;
 		
 		ip_conc = ImageJFunctions.show(prepareConcatForImageJView(img_conc,sConcatDim), "Concatenated" );
+	
 		ip_conc.setCalibration(imageSet.cal);
-//		//utM.addCaptionsOverlay(imageSet.sFileNamesShort, ip_montage);
+		utC.addCaptionsOverlay(imageSet.sFileNamesShort, ip_conc, sConcatDim);
 		ip_conc.getWindow().addWindowListener(this);
-//
 		IJ.log("Done.");
 	}
 	
@@ -269,19 +272,26 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		switch (sConcatDim)
 		{
 			case "T":
-				if(!imageSet.bMultiCh)
+				if(sConcatDim.length()<5)
 				{
-					out = Views.permute(Views.addDimension(out, 0, 0),2,out.numDimensions());
+					if(!imageSet.bMultiCh)
+					{
+						out = Views.permute(Views.addDimension(out, 0, 0),2,out.numDimensions());
+					}
+					if(imageSet.nSlices==1)
+					{
+						out = Views.addDimension(out, 0, 0);
+					}
+					out = Views.permute(out,3,4);
 				}
+				break;
+			case "C":
+				out = Views.permute(out,2,out.numDimensions()-1);
 				if(imageSet.nSlices==1)
 				{
 					out = Views.addDimension(out, 0, 0);
 					out = Views.permute(out,3,4);
 				}
-				
-				break;
-			case "C":
-				out = Views.permute(out,2,out.numDimensions()-1);
 				break;
 			case "Z":
 				if(imageSet.bMultiCh)
@@ -297,8 +307,70 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		}
 		return out;
 	}
+
 	
-    
+    /** Helper function for the overlays **/
+	public static String getTruncatedString(final FontMetrics fM,  final Graphics g, final int nMaxWidth, final String sIn)
+	{
+		if (sIn == null)
+            return null;
+		
+		String truncated = sIn;
+		int length = sIn.length();
+		while (length>0)
+		{
+			if(fM.getStringBounds(truncated, g).getWidth()<=nMaxWidth)
+			{
+				return truncated;
+			}
+			length--;
+			truncated = sIn.substring(0, length);
+		}
+		return "";
+	}
+	
+	@Override
+	public void windowOpened(WindowEvent e) {
+		
+	}
+
+	@Override
+	public void windowClosing(WindowEvent e) {
+		
+	}
+
+	@Override
+	public void windowClosed(WindowEvent e) {
+		if(imageSet.filesOpened!=null)
+		{
+			for (int i=0;i<imageSet.filesOpened.size();i++)
+			{
+				imageSet.filesOpened.get(i).dispose();
+			}
+		}
+		
+	}
+
+	@Override
+	public void windowIconified(WindowEvent e) {
+		
+	}
+
+	@Override
+	public void windowDeiconified(WindowEvent e) {
+		
+	}
+
+	@Override
+	public void windowActivated(WindowEvent e) {
+		
+	}
+
+	@Override
+	public void windowDeactivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
 	public static void main( final String[] args ) throws ImgIOException, IncompatibleTypeException
 	{
 		// open an ImageJ window
@@ -312,53 +384,6 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 	
 	}
 
-	@Override
-	public void windowOpened(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
 
-	@Override
-	public void windowClosing(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void windowClosed(WindowEvent e) {
-		// TODO Auto-generated method stub
-		if(imageSet.filesOpened!=null)
-		{
-			for (int i=0;i<imageSet.filesOpened.size();i++)
-			{
-				imageSet.filesOpened.get(i).dispose();
-			}
-		}
-		
-	}
-
-	@Override
-	public void windowIconified(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void windowDeiconified(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void windowActivated(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void windowDeactivated(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
 
 }

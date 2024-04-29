@@ -1,7 +1,16 @@
 package unequaltiffs;
 
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
+import ij.ImagePlus;
+import ij.gui.Overlay;
+import ij.gui.TextRoi;
+import ij.gui.Toolbar;
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.cache.img.CellLoader;
@@ -103,5 +112,50 @@ public class UTConcatenate < T extends RealType< T > & NativeType< T > >{
 				cursorTest.get(),
 				loader,
 				ReadOnlyCachedCellImgOptions.options().cellDimensions( cellDimensions ).cacheType(CacheType.BOUNDED).maxCacheSize(3) );
+	}
+	/** function adding filenames to overlay of Concatenate **/
+	public void addCaptionsOverlay(final String[] filenames, final ImagePlus im, final String sConcDimension)
+	{
+	
+		Overlay imOverlay = new Overlay(); 
+		final Font font = new Font(TextRoi.getDefaultFontName(),TextRoi.getDefaultFontStyle(),TextRoi.getDefaultFontSize());
+
+		final Graphics g = (new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB)).createGraphics();
+		g.setFont(font);
+		final FontMetrics fM = g.getFontMetrics();
+		
+		TextRoi txtROI;
+		Rectangle2D.Double bounds;
+
+		//for(int i = 0; i<im_dims.size();i++)
+		for(int i = 0; i<nImgN;i++)
+		{
+			//String in = getTruncatedString( fM, g, (int) singleBox[1][0]-5, filenames[i]);
+			txtROI = new TextRoi(5, 5, UnequalTiffs.getTruncatedString( fM, g, (int) singleBoxDims[0]-5, filenames[i] ), font);
+			txtROI.setStrokeColor(Toolbar.getForegroundColor());
+			txtROI.setAntiAlias(TextRoi.isAntialiased());
+			txtROI.setJustification(TextRoi.getGlobalJustification());
+			bounds = txtROI.getFloatBounds();
+			bounds.width = 5;
+			txtROI.setBounds(bounds);
+			switch (sConcDimension)
+			{
+			case "T":
+				txtROI.setPosition(1, 1, i+1);
+				break;
+			case "C":
+				txtROI.setPosition(i+1, 1, 1);
+				break;
+			case "Z":
+				txtROI.setPosition(1, i+1, 1);
+				break;
+			}
+
+			
+			imOverlay.add(txtROI);
+
+		}
+		
+		im.setOverlay(imOverlay);
 	}
 }
