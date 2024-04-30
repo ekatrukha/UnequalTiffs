@@ -272,18 +272,18 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		switch (sConcatDim)
 		{
 			case "T":
-				if(sConcatDim.length()<5)
-				{
-					if(!imageSet.bMultiCh)
+					if(img_concat.numDimensions()<5)
 					{
-						out = Views.permute(Views.addDimension(out, 0, 0),2,out.numDimensions());
+						if(!imageSet.bMultiCh)
+						{
+							out = Views.permute(Views.addDimension(out, 0, 0),2,out.numDimensions());
+						}
+						if(imageSet.nSlices==1)
+						{
+							out = Views.addDimension(out, 0, 0);
+						}
+						out = Views.permute(out,3,4);
 					}
-					if(imageSet.nSlices==1)
-					{
-						out = Views.addDimension(out, 0, 0);
-					}
-					out = Views.permute(out,3,4);
-				}
 				break;
 			case "C":
 				out = Views.permute(out,2,out.numDimensions()-1);
