@@ -45,7 +45,7 @@ public class UTMontage< T extends RealType< T > & NativeType< T > > {
 	{
 		imageSet = imageSet_;
 		singleBoxDims = imageSet.getSingleBoxDims();
-		intervals = new ArrayList<IntervalView<T>>();
+		intervals = new ArrayList<>();
 		nImgN = imageSet.im_dims.size();
 	}
 	

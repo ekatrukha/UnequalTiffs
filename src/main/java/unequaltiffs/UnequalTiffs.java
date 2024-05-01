@@ -34,7 +34,7 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 	int nAlignMontage;
 	int nAlignConc;
 	String sFileExtension = ".tif";
-	UTImageSet<T> imageSet = new UTImageSet<T>();
+	UTImageSet<T> imageSet = new UTImageSet<>();
 	
 	@Override
 	public void run(String arg) {
@@ -85,7 +85,7 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		{
 			if(!bIs2D)
 			{
-				UTExploreBDV<T> exploreBDV = new UTExploreBDV<T>(imageSet);
+				UTExploreBDV<T> exploreBDV = new UTExploreBDV<>(imageSet);
 				exploreBDV.browseBDV();
 			}
 			else
@@ -98,7 +98,7 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 			
 			if(!bIs2D)
 			{
-				UTExploreBVV<T> exploreBVV = new UTExploreBVV<T>(imageSet);
+				UTExploreBVV<T> exploreBVV = new UTExploreBVV<>(imageSet);
 				exploreBVV.browseBVV();
 			}
 			else
@@ -139,7 +139,7 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		
 		IJ.log("Align images by:"+sAlingMontage[nAlignMontage]+".");
 		
-		UTMontage<T> utM = new UTMontage<T>(imageSet);
+		UTMontage<T> utM = new UTMontage<>(imageSet);
 		Img<T> img_montage = utM.makeMontage(nRows, nCols, nAlignMontage);
 		ImagePlus ip_montage;
 		
@@ -199,7 +199,7 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		//ask user, what he wants as a concatenation axis
 		final GenericDialog gdConcat = new GenericDialog( "Concatenate" );
 		final String[] sAlingConc = new String[2];
-		String[] sConcatDimDial = null;
+		String[] sConcatDimDial = new String[1];
 		if (sConcatOptions.length()>0)
 		{
 			sConcatDimDial = new String[sConcatOptions.length()];
@@ -216,7 +216,7 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		gdConcat.showDialog();
 		if (gdConcat.wasCanceled() )
 			return;
-		
+		sConcatDim = "";
 		if (sConcatOptions.length()>0)
 		{
 			sConcatDim = sConcatDimDial[gdConcat.getNextChoiceIndex()];
@@ -237,8 +237,8 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		nAlignConc = gdConcat.getNextChoiceIndex();
 		Prefs.set("UnequalTiffs.nAlignConc", sAlingConc[nAlignConc]);
 		IJ.log("Align images by:"+sAlingConc[nAlignConc]+".");
-		UTConcatenate<T> utC = new UTConcatenate<T>(imageSet);
-		Img<T> img_conc = utC.concatenate( nAlignConc, sConcatDim);
+		UTConcatenate<T> utC = new UTConcatenate<>(imageSet);
+		Img<T> img_conc = utC.concatenate(nAlignConc);
 		ImagePlus ip_conc = null;
 		
 		ip_conc = ImageJFunctions.show(prepareConcatForImageJView(img_conc,sConcatDim), "Concatenated" );
@@ -368,7 +368,6 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 
 	@Override
 	public void windowDeactivated(WindowEvent e) {
-		// TODO Auto-generated method stub
 		
 	}
 	public static void main( final String[] args ) throws ImgIOException, IncompatibleTypeException

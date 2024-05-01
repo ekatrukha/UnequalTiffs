@@ -66,12 +66,8 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 		{
 			
 			IJ.log("Analyzing folder "+sPath);
-			try {
-				filenames = getFilenamesFromFolder(sPath, sFileExtension);
-			} catch (IOException e) {
-				e.printStackTrace();
-				IJ.log(e.getMessage());
-			}	
+			filenames = getFilenamesFromFolder(sPath, sFileExtension);
+
 			if(filenames == null)
 			{
 				return false;
@@ -132,7 +128,7 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 		config.imgOpenerSetImgModes(openMode );
 		//Img< ? > firstImg =  imgOpener.openImgs( filenames.get(0), config ).get( 0 );
 		
-		filesOpened = new ArrayList<SCIFIOImgPlus< T >>();
+		filesOpened = new ArrayList<>();
 		filesOpened.add((SCIFIOImgPlus<T>) imgOpener.openImgs( filenames.get(0), config ).get( 0 ));
 		//SCIFIOImgPlus< ? > firstImg =  imgOpener.openImgs( filenames.get(0), config ).get( 0 );
 		
@@ -141,10 +137,10 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 		@SuppressWarnings("rawtypes")
 		Class TypeIni = cursorTest.get().getClass();
 		nDimN = filesOpened.get(0).getImg().numDimensions();
-		im_dims = new ArrayList<long[]>();
+		im_dims = new ArrayList<>();
 		//SCIFIOImgPlus< ? > imageCell;
-		imgs_in = new ArrayList<Img<T>>();
-		imgs_in.add((Img<T>) filesOpened.get(0).getImg());
+		imgs_in = new ArrayList<>();
+		imgs_in.add(filesOpened.get(0).getImg());
 		im_dims.add(filesOpened.get(0).getImg().dimensionsAsLongArray());
 		
 		long [] dimsMin = new long [nDimN];
@@ -197,7 +193,7 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 					return false ;
 				}
 			}
-			imgs_in.add((Img<T>) filesOpened.get(i).getImg());
+			imgs_in.add(filesOpened.get(i).getImg());
 
 		}
 		IJ.showStatus("Loading files....done.");
@@ -214,7 +210,7 @@ public class UTImageSet < T extends RealType< T > & NativeType< T > >
 	
 	/**given the path to folder and file extension, returns List<String> of filenames **/
 	public static List<String> getFilenamesFromFolder(final String sFolderPath, final String fileExtension)    
-			throws IOException {
+	{
 		final Path path = Paths.get(sFolderPath);
 
 		if (!Files.isDirectory(path)) {

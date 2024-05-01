@@ -39,10 +39,10 @@ public class UTConcatenate < T extends RealType< T > & NativeType< T > >{
 	{
 		imageSet = imageSet_;
 		singleBoxDims = imageSet.getSingleBoxDims();
-		intervals = new ArrayList<IntervalView<T>>();
+		intervals = new ArrayList<>();
 		nImgN = imageSet.im_dims.size();
 	}
-	public Img< T > concatenate(final int nAlignConc, final String sConcDimension)
+	public Img< T > concatenate(final int nAlignConc)
 	{
 		
 		long [][] singleBoxInterval = new long [2][singleBoxDims.length];

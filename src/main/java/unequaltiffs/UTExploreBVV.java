@@ -39,7 +39,7 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 	long [][] nFinalBox;
 	public double [] globCal;
 	
-	ArrayList<BvvStackSource< ? >> bvv_sources = new ArrayList<BvvStackSource< ? >>();
+	ArrayList<BvvStackSource< ? >> bvv_sources = new ArrayList<>();
 
 	public VolumeViewerPanel viewer;
 	/** main instance of BVV **/
@@ -70,7 +70,7 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 	{
 		imageSet = imageSet_;
 		singleBoxDims = imageSet.getSingleBoxDims();
-		intervals = new ArrayList<IntervalView<T>>();
+		intervals = new ArrayList<>();
 		nImgN = imageSet.im_dims.size();
 		dragRotate = new Rotate( 0.3 );
 	}
@@ -383,11 +383,11 @@ public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 		nBox[1][1] = singleBoxDims[1]*nRows;
 		nBox[1][2] = singleBoxDims[2];
 		
-		double nW = (double)(nBox[1][0]-nBox[0][0])*globCal[0];
-		double nH = (double)(nBox[1][1]-nBox[0][1])*globCal[1];
-		double nWoff = (double)(2.0*nBox[0][0])*globCal[0];
-		double nHoff = (double)(2.0*nBox[0][1])*globCal[1];
-		double nDoff = (double)(2.0*nBox[1][2])*globCal[2];
+		double nW = (nBox[1][0]-nBox[0][0])*globCal[0];
+		double nH = (nBox[1][1]-nBox[0][1])*globCal[1];
+		double nWoff = 2.0*nBox[0][0]*globCal[0];
+		double nHoff = 2.0*nBox[0][1]*globCal[1];
+		double nDoff = 2.0*nBox[1][2]*globCal[2];
 		
 		double sW = viewer.getWidth();
 		double sH = viewer.getHeight();
