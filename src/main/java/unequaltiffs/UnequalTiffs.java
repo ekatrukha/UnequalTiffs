@@ -25,7 +25,7 @@ import net.imglib2.view.Views;
 
 public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implements PlugIn, WindowListener {
 
-	final String sPluginVersion = "0.1.0";
+	final String sPluginVersion = "0.1.1";
 
 
 	int nImgN;
