@@ -76,7 +76,8 @@
 		<package-name>UnequalTiffs</package-name>
 
 		<license.licenseName>gpl_v3</license.licenseName>
-        	<license.copyrightOwners>Cell Biology, Neurobiology and Biophysics Department of Utrecht University</license.copyrightOwners>
+        <license.copyrightOwners>Cell Biology, Neurobiology and Biophysics Department of Utrecht University</license.copyrightOwners>  
+	    <scijava.coding-style>imglib2</scijava.coding-style>
 	</properties>
 
     <repositories>
