@@ -7,10 +7,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
-import ij.ImagePlus;
-import ij.gui.Overlay;
-import ij.gui.TextRoi;
-import ij.gui.Toolbar;
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.cache.img.CellLoader;
@@ -24,6 +20,11 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
+
+import ij.ImagePlus;
+import ij.gui.Overlay;
+import ij.gui.TextRoi;
+import ij.gui.Toolbar;
 
 public class UTConcatenate < T extends RealType< T > & NativeType< T > >{
 	

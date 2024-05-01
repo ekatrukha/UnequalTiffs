@@ -1,7 +1,14 @@
 package unequaltiffs;
 
-
 import java.util.ArrayList;
+
+import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.LinAlgHelpers;
+import net.imglib2.view.IntervalView;
+import net.imglib2.view.Views;
 
 import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
@@ -15,14 +22,6 @@ import btbvv.core.VolumeViewerPanel;
 import btbvv.vistools.Bvv;
 import btbvv.vistools.BvvFunctions;
 import btbvv.vistools.BvvStackSource;
-
-import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.RealType;
-import net.imglib2.util.LinAlgHelpers;
-import net.imglib2.view.IntervalView;
-import net.imglib2.view.Views;
 
 public class UTExploreBVV < T extends RealType< T > & NativeType< T > >
 {

@@ -12,6 +12,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import net.imglib2.Cursor;
+import net.imglib2.img.Img;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.RealType;
+
 import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
@@ -21,10 +26,6 @@ import io.scif.config.SCIFIOConfig;
 import io.scif.config.SCIFIOConfig.ImgMode;
 import io.scif.img.ImgOpener;
 import io.scif.img.SCIFIOImgPlus;
-import net.imglib2.Cursor;
-import net.imglib2.img.Img;
-import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.RealType;
 
 public class UTImageSet < T extends RealType< T > & NativeType< T > >
 {

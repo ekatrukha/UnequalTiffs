@@ -5,6 +5,13 @@ import java.awt.Graphics;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
+import net.imglib2.exception.IncompatibleTypeException;
+import net.imglib2.img.Img;
+import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.IntervalView;
+import net.imglib2.view.Views;
 
 import ij.IJ;
 import ij.ImageJ;
@@ -14,14 +21,6 @@ import ij.gui.GenericDialog;
 import ij.io.DirectoryChooser;
 import ij.plugin.PlugIn;
 import io.scif.img.ImgIOException;
-
-import net.imglib2.exception.IncompatibleTypeException;
-import net.imglib2.img.Img;
-import net.imglib2.img.display.imagej.ImageJFunctions;
-import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.RealType;
-import net.imglib2.view.IntervalView;
-import net.imglib2.view.Views;
 
 public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implements PlugIn, WindowListener {
 
@@ -47,11 +46,7 @@ public class UnequalTiffs < T extends RealType< T > & NativeType< T > > implemen
 		if(sPath==null)
 			return;
 		IJ.log("UnequalTiffCombineMontage v."+sPluginVersion);
-		//if(arg.equals("Explore"))
-	//	{
-		//	imageSet.openMode = ImgMode.ARRAY;
-			//IJ.log("reading all images");
-		//}
+
 		if(!imageSet.initializeAndCheckConsistensy(sPath, sFileExtension))
 			return;
 		nImgN = imageSet.imgs_in.size();
