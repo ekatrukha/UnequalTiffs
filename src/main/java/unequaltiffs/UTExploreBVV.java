@@ -121,7 +121,8 @@ public class UTExploreBVV< T extends RealType< T > & NativeType< T > >
 		makeIntervals();
 
 		Bvv Tempbvv = BvvFunctions.show( Bvv.options().dCam( 2000.0 ).dClipNear( 1000 ).dClipFar( 1000 )//.
-		//cacheBlockSize( 32 ).
+		//.renderHeight( 1000 ).renderWidth( 1000 )
+				//cacheBlockSize( 32 ).
 		//maxCacheSizeInMB( 4000)
 		);
 		double[] currShift;

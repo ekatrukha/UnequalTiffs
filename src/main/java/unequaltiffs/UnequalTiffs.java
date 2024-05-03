@@ -416,9 +416,10 @@ public class UnequalTiffs< T extends RealType< T > & NativeType< T > > implement
 		@SuppressWarnings( "rawtypes" )
 		UnequalTiffs un = new UnequalTiffs();
 		//un.run("Montage");
+		//un.run( "Concatenate" );
 		//un.run("BrowseBDV");
+		un.run("BrowseBVV");
 
-		un.run( "Concatenate" );
 
 	}
 
