@@ -1,12 +1,13 @@
 UnequalTiffs
 ===
 
-<img src="https://katpyxa.info/software/UnequalTiffs_logo.png" align="right" style="padding:100px"/>This is [FIJI](https://fiji.sc/) plugin for concatenating, making montages, or exploring in [BDV](https://imagej.net/plugins/bdv/)/[BVV](https://github.com/UU-cellbiology/bvv-playground)  
-[.tif](https://en.wikipedia.org/wiki/TIFF) images of different sizes, but with the same number of dimensions. 
-
+<img src="https://katpyxa.info/software/UnequalTiffs_logo.png" align="right" style="padding:100px"/>This is [FIJI](https://fiji.sc/) plugin for working with a set of [.tif](https://en.wikipedia.org/wiki/TIFF) images of different sizes, but with the same number of dimensions.  
+The plugin can perform their concatenation to a hyperstack, making 3D/4D/5D montage, or browse them in [BigDataViewer](https://imagej.net/plugins/bdv/)/[BigVolumeViewer](https://github.com/UU-cellbiology/bvv-playground)  
+Created hyperstacks are 'read-from-disk' and cached, so that all input tif file do have to fit in the memory.  
 
 Check out [wiki](https://github.com/ekatrukha/UnequalTiffs/wiki) for the documentation.
 
+Powered by [imglib2](https://github.com/imglib).
 
 ----------
 
