@@ -280,7 +280,7 @@ public class UnequalTiffs< T extends RealType< T > & NativeType< T > > implement
 		IJ.log( "Done." );
 	}
 
-	/** function orders input Img<T> to ImageJ order of XYCZT **/
+	/** function orders axes of the input Img to ImageJ order of XYCZT **/
 	public IntervalView< T > prepareMontageForImageJView( final Img< T > img_montage )
 	{
 		IntervalView< T > out = Views.interval( img_montage, img_montage );
