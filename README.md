@@ -1,3 +1,5 @@
+[![](https://github.com/ekatrukha/UnequalTiffs/actions/workflows/build-main.yml/badge.svg)](https://github.com/ekatrukha/AveragingND/actions/workflows/build-main.yml)
+
 UnequalTiffs
 ===
 
