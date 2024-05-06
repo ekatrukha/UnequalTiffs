@@ -297,7 +297,7 @@ public class UnequalTiffs< T extends RealType< T > & NativeType< T > > implement
 		return out;
 	}
 
-	/** function orders input Img<T> to ImageJ order of XYCZT **/
+	/** function orders axes of the input Img to ImageJ order of XYCZT **/
 	public IntervalView< T > prepareConcatForImageJView( final Img< T > img_concat, String sConcatDim )
 	{
 		IntervalView< T > out = Views.interval( img_concat, img_concat );

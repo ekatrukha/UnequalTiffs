@@ -248,7 +248,7 @@ public class UTImageSet< T extends RealType< T > & NativeType< T > >
 		return true;
 	}
 
-	/**given the path to folder and file extension, returns List<String> of filenames **/
+	/**given the path to folder and file extension, returns List of Strings containing filenames **/
 	public static List< String > getFilenamesFromFolder( final String sFolderPath, final String fileExtension )
 	{
 		final Path path = Paths.get( sFolderPath );
