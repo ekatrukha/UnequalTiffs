@@ -131,7 +131,7 @@ public class UTImageSet< T extends RealType< T > & NativeType< T > >
 		fillFilenamesArray( filenames, sFileExtension );
 		IJ.log( "Analyzing dimensions:" );
 
-		ImagePlus ipFirst = IJ.openImage( filenames.get( 0 ) );
+		ImagePlus ipFirst = IJ.openVirtual( filenames.get( 0 ) );
 		getChannelsColors( ipFirst );
 		cal = ipFirst.getCalibration();
 		ipDim = ipFirst.getDimensions();

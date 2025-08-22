@@ -7,7 +7,7 @@ UnequalTiffs
   
 The plugin can perform their concatenation to a hyperstack, making 3D/4D/5D montage, or browse them in [BigDataViewer](https://imagej.net/plugins/bdv/)/[BigVolumeViewer](https://github.com/UU-cellbiology/bvv-playground)  
  
-Created hyperstacks are 'read-from-disk' and cached, so that all input tif files do have to fit in the memory.  
+Created hyperstacks are 'read-from-disk' and cached, so that all input tif files do not have to fit in the memory.  
 
 Check out **[wiki](https://github.com/ekatrukha/UnequalTiffs/wiki)** for the documentation.
 
